@@ -1,13 +1,11 @@
 FROM gradle:jdk19 as builder
 WORKDIR /usr/app
 COPY . .
-RUN gradle --no-daemon :plugin:installBot
+RUN ./gradlew --no-daemon plugin:installBotArchive
 
-FROM ibm-semeru-runtimes:open-19-jre-focal
-
-LABEL org.opencontainers.image.source = "https://github.com/Votebot/votebot-plugin"
+FROM eclipse-temurin:19-jre-alpine
 
 WORKDIR /usr/app
-COPY --from=builder /usr/app/plugin/build/installVoteBot .
+COPY --from=builder /usr/app/plugin/build/installBot .
 
 ENTRYPOINT ["/usr/app/bin/mikmusic"]

@@ -106,7 +106,7 @@ class PollConverter(validator: Validator<Poll> = null) : SingleConverter<Poll>(v
                     if (it.messages.isNotEmpty()) {
                         choice(it.title.limit(100), it.messages.first().jumpUrl)
                     } else {
-                        VoteBotDatabase.polls.deleteOne(it.id)
+                        VoteBotDatabase.polls.deleteOneById(it.id)
                     }
                 }
             }
@@ -174,7 +174,7 @@ class PollConverter(validator: Validator<Poll> = null) : SingleConverter<Poll>(v
 
             Poll.Message(mid.value, channel.id.value, channel.guildId.value)
         } else { // Try a message ID
-            val channel: ChannelBehavior? = context.getChannel()
+            val channel: ChannelBehavior = context.getChannel()
 
             if (channel !is GuildMessageChannelBehavior) {
                 LOG.trace { "Current channel is not a guild message channel or DM channel." }

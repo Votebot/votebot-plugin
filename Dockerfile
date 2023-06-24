@@ -5,7 +5,7 @@ RUN gradle --no-daemon :plugin:installBot
 
 FROM ibm-semeru-runtimes:open-19-jre-focal
 
-LABEL org.opencontainers.image.source = "https://github.com/DRSchlaubi/mikbot"
+LABEL org.opencontainers.image.source = "https://github.com/Votebot/votebot-plugin"
 
 WORKDIR /usr/app
 COPY --from=builder /usr/app/plugin/build/installVoteBot .

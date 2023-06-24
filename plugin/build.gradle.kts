@@ -23,6 +23,7 @@ mikbotPlugin {
     bundle = "votebot"
     pluginId = "votebot"
     provider = "votebot.space"
+    license = "MIT"
 }
 
 buildConfig  {

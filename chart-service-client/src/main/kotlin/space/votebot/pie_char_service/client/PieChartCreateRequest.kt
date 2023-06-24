@@ -4,7 +4,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
- * Request to create a pie chart.@
+ * Request to create a pie chart.
  *
  * @property title the title of the pie chart
  * @property width the width of the pie chart

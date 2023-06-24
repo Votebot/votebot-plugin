@@ -1,11 +1,22 @@
+import org.jetbrains.kotlin.gradle.dsl.KotlinTopLevelExtension
+
 plugins {
-    `mikbot-bot`
+    alias(libs.plugins.kotlin) apply false
+    alias(libs.plugins.kotlin.serialization) apply false
+}
+allprojects {
+    version = "5.1.0"
+    group = "space.votebot"
+
+    repositories {
+        mavenCentral()
+    }
 }
 
-val versionString = "3.24.0" // version marker
-
-version = versionString
-
 subprojects {
-    version = versionString
+    afterEvaluate {
+        configure<KotlinTopLevelExtension> {
+            jvmToolchain(19)
+        }
+    }
 }

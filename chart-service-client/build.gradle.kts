@@ -1,5 +1,5 @@
 plugins {
-    `mikbot-module`
+    kotlin("jvm")
     kotlin("plugin.serialization")
 }
 

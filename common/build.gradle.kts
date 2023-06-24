@@ -6,13 +6,7 @@ plugins {
 kotlin {
     explicitApi()
 
-    jvm {
-        compilations.all {
-            kotlinOptions {
-                jvmTarget = "18"
-            }
-        }
-    }
+    jvm()
 //    js(IR) {
 //        nodejs()
 //        browser()

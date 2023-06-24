@@ -10,7 +10,7 @@ import dev.kord.core.entity.channel.TopGuildMessageChannel
 import dev.kord.core.entity.channel.thread.ThreadChannel
 import dev.schlaubi.mikbot.plugin.api.util.discordError
 
-suspend fun <A : Arguments> EphemeralSlashCommandContext<A>.checkPermissions(channel: GuildMessageChannel) {
+suspend fun <A : Arguments> EphemeralSlashCommandContext<A, *>.checkPermissions(channel: GuildMessageChannel) {
     val selfPermissions = channel.getEffectivePermissions(channel.kord.selfId)
     val requiredPermissions =
         Permissions(Permission.SendMessages, Permission.EmbedLinks, Permission.AttachFiles, Permission.ViewChannel)

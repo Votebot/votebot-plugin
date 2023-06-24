@@ -18,11 +18,11 @@ import space.votebot.core.*
 import space.votebot.util.checkPermissions
 import space.votebot.util.toPollMessage
 
-suspend fun <A> EphemeralSlashCommandContext<A>.createVote()
+suspend fun <A> EphemeralSlashCommandContext<A, *>.createVote()
         where A : Arguments, A : CreateSettings = createVote { arguments }
 
-suspend fun <A : Arguments> EphemeralSlashCommandContext<A>.createVote(
-    optionProvider: EphemeralSlashCommandContext<A>.() -> CreateSettings
+suspend fun <A : Arguments> EphemeralSlashCommandContext<A, *>.createVote(
+    optionProvider: EphemeralSlashCommandContext<A, *>.() -> CreateSettings
 ) {
     val kord = getKoin().get<Kord>()
     val settings = optionProvider()
@@ -94,7 +94,7 @@ suspend fun <A : Arguments> EphemeralSlashCommandContext<A>.createVote(
     }
 }
 
-private suspend fun <A : Arguments> EphemeralSlashCommandContext<A>.attemptSendingDMs(): Boolean {
+private suspend fun <A : Arguments> EphemeralSlashCommandContext<A, *>.attemptSendingDMs(): Boolean {
     if (user.getDmChannelOrNull() == null) {
         val (agreed) = confirmation(
             yesWord = translate("vote.create.retry"),

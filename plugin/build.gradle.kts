@@ -1,28 +1,36 @@
+import dev.schlaubi.mikbot.gradle.mikbot
+import org.gradle.api.Project
+import java.io.ByteArrayOutputStream
+
 plugins {
-    `mikbot-module`
-    `mikbot-plugin`
-    `mikbot-template`
+    kotlin("jvm")
     kotlin("plugin.serialization")
-    id("com.google.devtools.ksp")
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.mikbot)
+    alias(libs.plugins.buildconfig)
 }
 
 dependencies {
-    api(projects.votebot.common)
-    implementation(projects.votebot.chartServiceClient)
+    api(projects.common)
+    implementation(projects.chartServiceClient)
     implementation(libs.java.string.similarity)
     ksp(libs.kordex.processor)
-    optionalPlugin(projects.core.gdpr)
+    optionalPlugin(mikbot(libs.mikbot.gdpr))
 }
 
 mikbotPlugin {
-    description.set("Plugin adding VoteBot functionality")
-    bundle.set("votebot")
-    pluginId.set("votebot")
+    description = "Plugin adding VoteBot functionality"
+    bundle = "votebot"
+    pluginId = "votebot"
+    provider = "votebot.space"
 }
 
-template {
-    packageName.set("space.votebot")
-    className.set("VoteBotInfo")
+buildConfig  {
+    packageName = "space.votebot"
+    className = "VoteBotInfo"
+    buildConfigField("String", "VERSION", "\"${project.version}\"")
+    buildConfigField("String", "BRANCH", "\"${project.getGitBranch()}\"")
+    buildConfigField("String", "COMMIT", "\"${project.getGitCommit()}\"")
 }
 
 sourceSets {
@@ -34,34 +42,32 @@ sourceSets {
 }
 
 tasks {
-    val bundledPlugins = listOf(":core:gdpr", ":core:database-i18n", ":utils:botblock")
-
-    val assembleVoteBot = task<Zip>("assembleVoteBot") {
-        destinationDirectory.set(project.buildDir.resolve("bot"))
-        archiveBaseName.set("votebot-${project.name}")
-        archiveExtension.set("zip")
-
-        into("") {
-            from(project(":").tasks["installDist"])
-        }
-        val installedPluginsName = "lib/bundled-plugins"
-        into(installedPluginsName) {
-            val provider = assemblePlugin.flatMap { task -> task.archiveFile }
-            from(provider)
-        }
-        into(installedPluginsName) {
-            bundledPlugins.forEach { plugin ->
-                from(project(plugin).tasks["assemblePlugin"])
-            }
-        }
-    }
-
-    register<Copy>("installVoteBotArchive") {
-        dependsOn(assembleVoteBot)
-
-        from(zipTree(assembleVoteBot.archiveFile))
-        into(buildDir.resolve("installVoteBot"))
+    assembleBot {
+        val mikbotVersion = libs.versions.mikbot.get()
+        bundledPlugins.addAll("gdpr@$mikbotVersion", "database-i18n@$mikbotVersion")
     }
 }
 
-fun version(name: String) = project(name).version
+fun Project.getGitCommit(): String {
+    return execCommand(arrayOf("git", "rev-parse", "--short", "HEAD"))
+        ?: System.getenv("GITHUB_SHA") ?: "<unknown>"
+}
+
+fun Project.getGitBranch(): String {
+    return execCommand(arrayOf("git", "rev-parse", "--abbrev-ref", "HEAD")) ?: "unknown"
+}
+
+fun Project.execCommand(command: Array<String>): String? {
+    return try {
+        ByteArrayOutputStream().use { out ->
+            exec {
+                commandLine(command.asIterable())
+                standardOutput = out
+            }
+            out.toString().trim()
+        }
+    } catch (e: Throwable) {
+        logger.warn("An error occurred whilst executing a command", e)
+        null
+    }
+}

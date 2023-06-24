@@ -54,12 +54,12 @@ private suspend fun EventContext<GuildButtonInteractionCreateEvent>.onVote(guild
 
     val message = interaction.message
     val poll = VoteBotDatabase.polls.findOneByMessage(message) ?: run {
-        ack.edit { content = "This message is invalid" }
+        ack.createEphemeralFollowup { content = "This message is invalid" }
         return
     }
 
     val option = interaction.componentId.substringAfter("vote_").toIntOrNull() ?: run {
-        ack.edit { content = "Unexpected component id: ${interaction.componentId}" }
+        ack.createEphemeralFollowup { content = "Unexpected component id: ${interaction.componentId}" }
         return
     }
 

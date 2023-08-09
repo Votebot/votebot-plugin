@@ -6,8 +6,8 @@ import com.kotlindiscord.kord.extensions.extensions.event
 import dev.kord.core.event.gateway.ReadyEvent
 import dev.kord.gateway.PrivilegedIntent
 import dev.schlaubi.mikbot.plugin.api.Plugin
+import dev.schlaubi.mikbot.plugin.api.PluginContext
 import dev.schlaubi.mikbot.plugin.api.PluginMain
-import dev.schlaubi.mikbot.plugin.api.PluginWrapper
 import dev.schlaubi.mikbot.plugin.api.config.Config
 import dev.schlaubi.mikbot.plugin.api.config.Environment
 import io.ktor.client.*
@@ -19,8 +19,7 @@ import org.litote.kmongo.serialization.registerSerializer
 import space.votebot.commands.commands
 
 @PluginMain
-class VoteBotPlugin(wrapper: PluginWrapper) : Plugin(wrapper) {
-    @OptIn(ExperimentalSerializationApi::class, ExperimentalUnsignedTypes::class)
+class VoteBotPlugin(wrapper: PluginContext) : Plugin(wrapper) {
     override fun start() {
         registerSerializer(ULong.serializer())
     }

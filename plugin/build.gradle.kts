@@ -24,6 +24,7 @@ mikbotPlugin {
     pluginId = "votebot"
     provider = "votebot.space"
     license = "MIT"
+    enableKordexProcessor = false
 }
 
 buildConfig  {

@@ -12,7 +12,7 @@ suspend fun Poll.generateCSV(kord: Kord): String = buildString {
     append(header)
     appendLine()
     votes.forEach {
-        append(kord.getUser(Snowflake(it.userId))?.tag ?: "<unknown user>").append(it.userId)
+        append(kord.getUser(Snowflake(it.userId))?.username ?: "<unknown user>").append(it.userId)
         append(',')
         append(it.forOption + 1)
         append(',')

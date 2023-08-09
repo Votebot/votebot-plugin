@@ -10,7 +10,7 @@ object UserMessageTransformer : RegexReplaceTransformer() {
         val (userId) = match.destructured
         return try {
             val user = kord.getUser(Snowflake(userId)) ?: return null
-            return "${user.username}#${user.discriminator}"
+            return user.username
         } catch (e: NumberFormatException) {
             null
         }

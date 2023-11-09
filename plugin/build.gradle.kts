@@ -1,5 +1,4 @@
 import dev.schlaubi.mikbot.gradle.mikbot
-import org.gradle.api.Project
 import java.io.ByteArrayOutputStream
 
 plugins {
@@ -38,7 +37,7 @@ buildConfig  {
 sourceSets {
     main {
         java {
-            srcDir(file("$buildDir/generated/ksp/main/kotlin/"))
+            srcDir(layout.buildDirectory.dir("generated/ksp/main/kotlin/"))
         }
     }
 }

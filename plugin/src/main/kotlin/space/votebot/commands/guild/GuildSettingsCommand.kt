@@ -4,7 +4,6 @@ import com.kotlindiscord.kord.extensions.commands.Arguments
 import com.kotlindiscord.kord.extensions.commands.application.slash.ephemeralSubCommand
 import com.kotlindiscord.kord.extensions.commands.converters.impl.channel
 import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
-import com.kotlindiscord.kord.extensions.types.respond
 import dev.kord.core.behavior.channel.asChannelOfOrNull
 import dev.kord.core.entity.channel.TopGuildMessageChannel
 import dev.schlaubi.mikbot.plugin.api.settings.SettingsModule

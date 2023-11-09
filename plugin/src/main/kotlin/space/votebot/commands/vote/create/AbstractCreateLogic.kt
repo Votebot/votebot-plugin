@@ -2,7 +2,6 @@ package space.votebot.commands.vote.create
 
 import com.kotlindiscord.kord.extensions.commands.Arguments
 import com.kotlindiscord.kord.extensions.commands.application.slash.EphemeralSlashCommandContext
-import com.kotlindiscord.kord.extensions.types.respond
 import dev.kord.common.exception.RequestException
 import dev.kord.core.Kord
 import dev.kord.core.behavior.channel.asChannelOf

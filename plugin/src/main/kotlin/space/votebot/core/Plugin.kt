@@ -13,7 +13,6 @@ import dev.schlaubi.mikbot.plugin.api.config.Environment
 import io.ktor.client.*
 import io.ktor.client.engine.cio.*
 import kotlinx.coroutines.cancel
-import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.builtins.serializer
 import org.litote.kmongo.serialization.registerSerializer
 import space.votebot.commands.commands

@@ -3,7 +3,6 @@ package space.votebot.commands.vote
 import com.kotlindiscord.kord.extensions.commands.Arguments
 import com.kotlindiscord.kord.extensions.commands.converters.impl.string
 import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
-import com.kotlindiscord.kord.extensions.types.respond
 import space.votebot.command.poll
 import space.votebot.core.VoteBotModule
 import space.votebot.core.updateMessages

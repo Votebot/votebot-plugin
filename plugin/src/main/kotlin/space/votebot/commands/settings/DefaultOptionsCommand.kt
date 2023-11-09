@@ -2,7 +2,6 @@ package space.votebot.commands.settings
 
 import com.kotlindiscord.kord.extensions.commands.Arguments
 import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
-import com.kotlindiscord.kord.extensions.types.respond
 import dev.schlaubi.mikbot.plugin.api.settings.SettingsModule
 import space.votebot.command.PollSettingsArguments
 import space.votebot.command.decide

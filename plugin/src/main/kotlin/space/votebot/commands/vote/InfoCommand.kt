@@ -1,7 +1,6 @@
 package space.votebot.commands.vote
 
 import com.kotlindiscord.kord.extensions.extensions.publicSlashCommand
-import com.kotlindiscord.kord.extensions.types.respond
 import dev.kord.rest.builder.message.create.embed
 import dev.schlaubi.mikbot.plugin.api.MikBotInfo
 import dev.schlaubi.stdx.coroutines.parallelMapNotNull

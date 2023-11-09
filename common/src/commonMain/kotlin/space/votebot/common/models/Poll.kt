@@ -3,8 +3,8 @@ package space.votebot.common.models
 import kotlinx.datetime.Instant
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import space.votebot.common.models.Poll.*
-
+import space.votebot.common.models.Poll.RenderableOption
+import space.votebot.common.models.Poll.Vote
 
 
 @Serializable

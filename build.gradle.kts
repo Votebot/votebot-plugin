@@ -5,7 +5,7 @@ plugins {
     alias(libs.plugins.kotlin.serialization) apply false
 }
 allprojects {
-    version = "5.2.0"
+    version = "5.3.0"
     group = "space.votebot"
 
     repositories {
@@ -16,7 +16,7 @@ allprojects {
 subprojects {
     afterEvaluate {
         configure<KotlinTopLevelExtension> {
-            jvmToolchain(20)
+            jvmToolchain(21)
         }
     }
 }

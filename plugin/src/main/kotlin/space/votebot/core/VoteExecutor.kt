@@ -9,7 +9,6 @@ import dev.kord.common.entity.Snowflake
 import dev.kord.core.Kord
 import dev.kord.core.behavior.GuildBehavior
 import dev.kord.core.behavior.interaction.response.createEphemeralFollowup
-import dev.kord.core.behavior.interaction.response.edit
 import dev.kord.core.event.interaction.GuildButtonInteractionCreateEvent
 import io.ktor.client.request.forms.*
 import io.ktor.utils.io.jvm.javaio.*

@@ -53,9 +53,9 @@ suspend fun Poll.addMessage(
     addToDatabase: Boolean,
 ): Message {
     val message = channel.createMessage {
-        embeds.add(toEmbed(channel.kord, guild, false))
+        embeds = mutableListOf(toEmbed(channel.kord, guild, false))
         if (addButtons) {
-            components.addAll(makeButtons(channel.kord, guild))
+            components = makeButtons(channel.kord, guild).toMutableList()
         }
     }
 

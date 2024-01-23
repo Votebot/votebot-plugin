@@ -4,14 +4,9 @@ import com.kotlindiscord.kord.extensions.builders.ExtensibleBotBuilder
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.event
 import dev.kord.core.event.gateway.ReadyEvent
-import dev.kord.gateway.PrivilegedIntent
 import dev.schlaubi.mikbot.plugin.api.Plugin
 import dev.schlaubi.mikbot.plugin.api.PluginContext
 import dev.schlaubi.mikbot.plugin.api.PluginMain
-import dev.schlaubi.mikbot.plugin.api.config.Config
-import dev.schlaubi.mikbot.plugin.api.config.Environment
-import io.ktor.client.*
-import io.ktor.client.engine.cio.*
 import kotlinx.coroutines.cancel
 import kotlinx.serialization.builtins.serializer
 import org.litote.kmongo.serialization.registerSerializer
@@ -21,19 +16,6 @@ import space.votebot.commands.commands
 class VoteBotPlugin(wrapper: PluginContext) : Plugin(wrapper) {
     override fun start() {
         registerSerializer(ULong.serializer())
-    }
-
-    @OptIn(PrivilegedIntent::class)
-    override suspend fun ExtensibleBotBuilder.apply() {
-        if (Config.ENVIRONMENT == Environment.PRODUCTION) {
-            kord {
-                httpClient = HttpClient(CIO) {
-                    engine {
-                        threadsCount = 25
-                    }
-                }
-            }
-        }
     }
 
     override fun ExtensibleBotBuilder.ExtensionsBuilder.addExtensions() {

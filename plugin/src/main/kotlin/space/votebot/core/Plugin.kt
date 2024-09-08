@@ -7,6 +7,8 @@ import dev.kord.core.event.gateway.ReadyEvent
 import dev.schlaubi.mikbot.plugin.api.Plugin
 import dev.schlaubi.mikbot.plugin.api.PluginContext
 import dev.schlaubi.mikbot.plugin.api.PluginMain
+import dev.schlaubi.mikbot.plugin.api.config.Config
+import dev.schlaubi.mikbot.plugin.api.config.Environment
 import kotlinx.coroutines.cancel
 import kotlinx.serialization.builtins.serializer
 import org.litote.kmongo.serialization.registerSerializer
@@ -20,6 +22,15 @@ class VoteBotPlugin(wrapper: PluginContext) : Plugin(wrapper) {
 
     override fun ExtensibleBotBuilder.ExtensionsBuilder.addExtensions() {
         add(::VoteBotModule)
+    }
+
+    override suspend fun ExtensibleBotBuilder.apply() {
+        extensions {
+            sentry {
+                dsn = Config.SENTRY_TOKEN
+                enable = Config.ENVIRONMENT == Environment.PRODUCTION
+            }
+        }
     }
 
     override fun stop() {

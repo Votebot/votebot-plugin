@@ -1,11 +1,6 @@
-FROM gradle:jdk21 as builder
-WORKDIR /usr/app
-COPY . .
-RUN ./gradlew --no-daemon plugin:installBotArchive
-
-FROM eclipse-temurin:21-jre-alpine
+FROM eclipse-temurin:22-jre-alpine
 
 WORKDIR /usr/app
-COPY --from=builder /usr/app/plugin/build/installBot .
+COPY --from=builder build/install/bot-plugin .
 
 ENTRYPOINT ["/usr/app/bin/mikmusic"]

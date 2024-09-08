@@ -7,7 +7,6 @@ import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.utils.io.*
-import java.nio.channels.ReadableByteChannel
 
 /**
  * Client for pie chart service on [url].
@@ -22,7 +21,7 @@ public class PieChartServiceClient(private val url: Url) {
     /**
      * Creates a PieChart for [request].
      *
-     * @return a [ReadableByteChannel] containing the image data
+     * @return a [ByteReadChannel] containing the image data
      */
     public suspend fun createPieChart(request: PieChartCreateRequest): ByteReadChannel = client.post(url) {
         url {

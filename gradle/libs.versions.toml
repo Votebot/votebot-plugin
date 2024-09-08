@@ -1,23 +1,24 @@
 [versions]
-kotlin = "1.9.22"
-mikbot = "3.28.0"
-ktor = "2.3.4"
+kotlin = "2.0.20"
+mikbot = "3.35.6"
+ktor = "2.3.12"
 
 [libraries]
-kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version = "1.6.1" }
+kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version = "1.7.1" }
 ktor-client-okhttp = { group = "io.ktor", name = "ktor-client-okhttp", version.ref = "ktor" }
 ktor-client-content-negotiation = { group = "io.ktor", name = "ktor-client-content-negotiation", version.ref = "ktor" }
 ktor-serialization-kotlinx-json = { group = "io.ktor", name = "ktor-serialization-kotlinx-json", version.ref = "ktor" }
-kotlinx-datetime = { group = "org.jetbrains.kotlinx", name = "kotlinx-datetime", version = "0.4.1" }
+kotlinx-datetime = { group = "org.jetbrains.kotlinx", name = "kotlinx-datetime", version = "0.6.1" }
 
 mikbot-gdpr = { group = "dev.schlaubi", name = "mikbot-gdpr" }
+mikbot-health = { group = "dev.schlaubi", name = "mikbot-health" }
 
-kordex-processor = { group = "com.kotlindiscord.kord.extensions", name = "annotation-processor", version = "1.6.0-SNAPSHOT" }
+kordex-processor = { group = "com.kotlindiscord.kord.extensions", name = "annotation-processor", version = "1.9.1-mikbot-SNAPSHOT" }
 java-string-similarity = { group = "info.debatty", name = "java-string-similarity", version = "2.0.0" }
 
 [plugins]
 kotlin = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 mikbot = { id = "dev.schlaubi.mikbot.gradle-plugin", version.ref = "mikbot" }
-ksp = { id = "com.google.devtools.ksp", version = "1.9.22-1.0.16" }
-buildconfig = { id = "com.github.gmazzo.buildconfig", version = "4.1.2"}
+ksp = { id = "com.google.devtools.ksp", version = "2.0.20-1.0.24" }
+buildconfig = { id = "com.github.gmazzo.buildconfig", version = "5.4.0"}

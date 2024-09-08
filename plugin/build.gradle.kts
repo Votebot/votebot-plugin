@@ -1,5 +1,6 @@
 import dev.schlaubi.mikbot.gradle.mikbot
 import java.io.ByteArrayOutputStream
+import java.util.Locale
 
 plugins {
     kotlin("jvm")
@@ -15,6 +16,7 @@ dependencies {
     implementation(libs.java.string.similarity)
     ksp(libs.kordex.processor)
     optionalPlugin(mikbot(libs.mikbot.gdpr))
+    optionalPlugin(mikbot(libs.mikbot.health))
 }
 
 mikbotPlugin {
@@ -43,9 +45,12 @@ sourceSets {
 }
 
 tasks {
-    assembleBot {
-        val mikbotVersion = libs.versions.mikbot.get()
-        bundledPlugins.addAll("gdpr@$mikbotVersion", "database-i18n@$mikbotVersion")
+//    assembleBot {
+//        val mikbotVersion = libs.versions.mikbot.get()
+////        bundledPlugins.addAll("gdpr@$mikbotVersion", "database-i18n@$mikbotVersion")
+//    }
+    generateDefaultTranslationBundle {
+        defaultLocale = Locale.Builder().setLanguage("en").setRegion("US").build()
     }
 }
 

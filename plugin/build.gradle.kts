@@ -17,6 +17,7 @@ dependencies {
     ksp(libs.kordex.processor)
     optionalPlugin(mikbot(libs.mikbot.gdpr))
     optionalPlugin(mikbot(libs.mikbot.health))
+    optionalPlugin(mikbot(libs.mikbot.ktor))
 }
 
 mikbotPlugin {

@@ -12,6 +12,7 @@ kotlinx-datetime = { group = "org.jetbrains.kotlinx", name = "kotlinx-datetime",
 
 mikbot-gdpr = { group = "dev.schlaubi", name = "mikbot-gdpr" }
 mikbot-health = { group = "dev.schlaubi", name = "mikbot-health" }
+mikbot-ktor = { group = "dev.schlaubi", name = "mikbot-ktor" }
 
 kordex-processor = { group = "com.kotlindiscord.kord.extensions", name = "annotation-processor", version = "1.9.1-mikbot-SNAPSHOT" }
 java-string-similarity = { group = "info.debatty", name = "java-string-similarity", version = "2.0.0" }

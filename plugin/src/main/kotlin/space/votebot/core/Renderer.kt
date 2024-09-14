@@ -10,10 +10,12 @@ import dev.kord.core.Kord
 import dev.kord.core.behavior.GuildBehavior
 import dev.kord.core.behavior.channel.MessageChannelBehavior
 import dev.kord.core.behavior.channel.asChannelOf
+import dev.kord.core.behavior.channel.asChannelOfOrNull
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.edit
 import dev.kord.core.entity.Message
 import dev.kord.core.entity.channel.TopGuildMessageChannel
+import dev.kord.core.entity.channel.thread.ThreadChannel
 import dev.kord.rest.builder.component.ActionRowBuilder
 import dev.kord.rest.builder.component.MessageComponentBuilder
 import dev.kord.rest.builder.message.EmbedBuilder
@@ -22,7 +24,6 @@ import dev.schlaubi.mikbot.plugin.api.util.embed
 import dev.schlaubi.stdx.coroutines.forEachParallel
 import dev.schlaubi.stdx.coroutines.localSuspendLazy
 import io.ktor.client.request.forms.*
-import io.ktor.utils.io.jvm.javaio.*
 import kotlinx.datetime.Clock
 import mu.KotlinLogging
 import space.votebot.common.models.Poll
@@ -77,7 +78,6 @@ suspend fun Poll.updateMessages(
         runCatching {
             pieChartService
                 .createPieChart(toPieChartCreateRequest(kord, guild))
-                .toInputStream()
         }.getOrNull()
     } else {
         null
@@ -88,13 +88,16 @@ suspend fun Poll.updateMessages(
     messages.forEachParallel { message ->
         try {
             val messageBehavior = message.toBehavior(kord)
-            val permissions  = localSuspendLazy {
-                messageBehavior.channel.asChannelOf<TopGuildMessageChannel>().getEffectivePermissions(kord.selfId)
+            val permissions = localSuspendLazy {
+                val permissionChannel = messageBehavior.channel.asChannelOfOrNull<TopGuildMessageChannel>() ?:
+                    messageBehavior.channel.asChannelOf<ThreadChannel>().parent.asChannel()
+
+                permissionChannel.getEffectivePermissions(kord.selfId)
             }
             messageBehavior.edit {
                 if (pieChart != null) {
                     if (Permission.AttachFiles in permissions()) {
-                        addFile("chart.png", ChannelProvider(block = pieChart::toByteReadChannel))
+                        addFile("chart.png", ChannelProvider { pieChart })
                     } else {
                         content = "Could not create pie chart due to missing permissions"
                     }

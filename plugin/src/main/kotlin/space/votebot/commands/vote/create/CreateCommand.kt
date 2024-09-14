@@ -1,6 +1,5 @@
 package space.votebot.commands.vote.create
 
-import com.kotlindiscord.kord.extensions.checks.isNotInThread
 import com.kotlindiscord.kord.extensions.commands.converters.impl.string
 import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
 import dev.kord.core.entity.channel.Channel
@@ -23,19 +22,11 @@ class CreateOptions : AbstractPollSettingsArguments(), CreateSettings {
     override val answers: List<String> by lazy { answersOptions.split(optionsRegex) }
 
     override val settings: PollSettings get() = this
-
-    init {
-        args.reverse()
-    }
 }
 
 suspend fun VoteBotModule.createCommand() = ephemeralSlashCommand(::CreateOptions) {
     name = "create-vote"
     description = "commands.create.descriptions"
-
-    check {
-        isNotInThread()
-    }
 
     action {
         createVote()

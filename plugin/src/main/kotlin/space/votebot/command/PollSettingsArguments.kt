@@ -6,6 +6,8 @@ import com.kotlindiscord.kord.extensions.commands.application.slash.converters.i
 import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalBoolean
 import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalDuration
 import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalInt
+import dev.schlaubi.mikbot.plugin.api.util.IKnowWhatIAmDoing
+import dev.schlaubi.mikbot.plugin.api.util.SortedArguments
 import dev.schlaubi.mikbot.plugin.api.util.discordError
 import dev.schlaubi.mikbot.plugin.api.util.toDuration
 import kotlinx.datetime.DateTimePeriod
@@ -67,8 +69,8 @@ enum class ChoiceEmojiMode(override val readableName: String, val mode: PollSett
     CUSTOM("Custom Emotes", PollSettings.EmojiMode.CUSTOM)
 }
 
-@Suppress("LeakingThis") // This isn't huge
-abstract class AbstractPollSettingsArguments : Arguments(), PollSettingsArguments {
+@OptIn(IKnowWhatIAmDoing::class)
+abstract class AbstractPollSettingsArguments : SortedArguments(), PollSettingsArguments {
     override val maxVotes by maxVotes("How many times a user is allowed to vote")
     override val maxChanges by maxChanges("How many times a user is allowed to change their vote")
     override val hideResults: Boolean? by hideResults("Whether to show results only to people who voted or not")

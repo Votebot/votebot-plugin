@@ -16,7 +16,7 @@ dependencies {
     implementation(libs.java.string.similarity)
     ksp(libs.kordex.processor)
     optionalPlugin(mikbot(libs.mikbot.gdpr))
-    optionalPlugin(mikbot(libs.mikbot.health))
+    optionalPlugin(mikbot(libs.mikbot.kubernetes))
     optionalPlugin(mikbot(libs.mikbot.ktor))
 }
 

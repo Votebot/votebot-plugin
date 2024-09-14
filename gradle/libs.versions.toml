@@ -1,6 +1,6 @@
 [versions]
 kotlin = "2.0.20"
-mikbot = "3.35.6"
+mikbot = "3.36.0"
 ktor = "2.3.12"
 
 [libraries]
@@ -11,7 +11,7 @@ ktor-serialization-kotlinx-json = { group = "io.ktor", name = "ktor-serializatio
 kotlinx-datetime = { group = "org.jetbrains.kotlinx", name = "kotlinx-datetime", version = "0.6.1" }
 
 mikbot-gdpr = { group = "dev.schlaubi", name = "mikbot-gdpr" }
-mikbot-health = { group = "dev.schlaubi", name = "mikbot-health" }
+mikbot-kubernetes = { group = "dev.schlaubi", name = "mikbot-kubernetes" }
 mikbot-ktor = { group = "dev.schlaubi", name = "mikbot-ktor" }
 
 kordex-processor = { group = "com.kotlindiscord.kord.extensions", name = "annotation-processor", version = "1.9.1-mikbot-SNAPSHOT" }

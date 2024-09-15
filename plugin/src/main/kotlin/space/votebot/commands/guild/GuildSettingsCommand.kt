@@ -25,6 +25,7 @@ class SetVoteChannelArguments : Arguments() {
 suspend fun SettingsModule.addGuildSettingsCommand() = ephemeralSlashCommand {
     name = "settings"
     description = "commands.settings.description"
+    bundle = "votebot"
     guildAdminOnly()
 
     ephemeralSubCommand(::SetVoteChannelArguments) {

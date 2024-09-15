@@ -5,12 +5,16 @@ import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalChanne
 import com.kotlindiscord.kord.extensions.commands.converters.impl.string
 import dev.kord.common.entity.ChannelType
 import dev.kord.core.entity.channel.Channel
+import space.votebot.common.models.Poll
 import space.votebot.common.models.PollSettings
 
-interface CreateSettings {
-    val title: String
+interface CreateSettings : BasicCreateOptions {
     val answers: List<String>
     val settings: PollSettings
+}
+
+interface BasicCreateOptions {
+    val title: String
     val channel: Channel?
 
     fun Arguments.voteChannel() = optionalChannel {
@@ -25,3 +29,4 @@ interface CreateSettings {
         description = "generic.create_arguments.title"
     }
 }
+

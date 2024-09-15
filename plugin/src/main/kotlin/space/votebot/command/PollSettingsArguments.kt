@@ -15,11 +15,13 @@ import space.votebot.common.models.PollSettings
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 
-interface PollSettingsArguments : PollSettings {
+interface PollSettingsArguments : PollSettings, PollSettingsArgumentsMixin {
     val deleteAfterPeriod: DateTimePeriod?
     override val deleteAfter: Duration?
         get() = deleteAfterPeriod?.toDuration()
+}
 
+interface PollSettingsArgumentsMixin {
     fun Arguments.voteDuration(description: String) = optionalDuration {
         name = "duration"
         this.description = description
@@ -64,9 +66,15 @@ interface PollSettingsArguments : PollSettings {
 }
 
 enum class ChoiceEmojiMode(override val readableName: String, val mode: PollSettings.EmojiMode) : ChoiceEnum {
-    ON("Random Emojis", PollSettings.EmojiMode.ON),
-    OFF("Numbers", PollSettings.EmojiMode.OFF),
-    CUSTOM("Custom Emotes", PollSettings.EmojiMode.CUSTOM)
+    ON("vote.emoji_mode.on", PollSettings.EmojiMode.ON),
+    OFF("vote.emoji_mode.off", PollSettings.EmojiMode.OFF),
+    CUSTOM("vote.emoji_mode.custom", PollSettings.EmojiMode.CUSTOM)
+}
+
+fun PollSettings.EmojiMode.toChoiceEmoji() = when (this) {
+    PollSettings.EmojiMode.ON -> ChoiceEmojiMode.ON
+    PollSettings.EmojiMode.OFF -> ChoiceEmojiMode.OFF
+    PollSettings.EmojiMode.CUSTOM -> ChoiceEmojiMode.CUSTOM
 }
 
 @OptIn(IKnowWhatIAmDoing::class)

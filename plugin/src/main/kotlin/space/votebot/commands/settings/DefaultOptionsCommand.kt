@@ -25,6 +25,7 @@ class DefaultOptionsArgument : Arguments(), PollSettingsArguments {
 suspend fun SettingsModule.defaultOptionsCommand() = ephemeralSlashCommand(::DefaultOptionsArgument) {
     name = "default-options"
     description = "commands.default_options.description"
+    bundle = "votebot"
 
     action {
         val currentSettings = VoteBotDatabase.userSettings.findOneById(user.id)?.settings

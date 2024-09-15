@@ -5,6 +5,7 @@ import com.kotlindiscord.kord.extensions.commands.application.slash.EphemeralSla
 import dev.kord.common.exception.RequestException
 import dev.kord.core.Kord
 import dev.kord.core.behavior.channel.asChannelOf
+import dev.kord.core.entity.Message
 import dev.kord.core.entity.channel.GuildMessageChannel
 import dev.schlaubi.mikbot.plugin.api.util.confirmation
 import dev.schlaubi.mikbot.plugin.api.util.discordError
@@ -18,11 +19,15 @@ import space.votebot.util.checkPermissions
 import space.votebot.util.toPollMessage
 
 suspend fun <A> EphemeralSlashCommandContext<A, *>.createVote()
-        where A : Arguments, A : CreateSettings = createVote { arguments }
+    where A : Arguments, A : CreateSettings = createVote { arguments }
+
+suspend fun <A : Arguments> EphemeralSlashCommandContext<A, *>.createVote(
+    settings: CreateSettings
+): Message? = createVote { settings }
 
 suspend fun <A : Arguments> EphemeralSlashCommandContext<A, *>.createVote(
     optionProvider: EphemeralSlashCommandContext<A, *>.() -> CreateSettings
-) {
+): Message? {
     val kord = getKoin().get<Kord>()
     val settings = optionProvider()
     val guildVoteChannel = VoteBotDatabase.guildSettings.findOneByGuild(guild!!.id)?.voteChannelId?.let {
@@ -56,7 +61,7 @@ suspend fun <A : Arguments> EphemeralSlashCommandContext<A, *>.createVote(
     }
 
     if (finalSettings.publicResults && !attemptSendingDMs()) {
-        return
+        return null
     }
 
     val emojis = finalSettings.selectEmojis(
@@ -80,17 +85,16 @@ suspend fun <A : Arguments> EphemeralSlashCommandContext<A, *>.createVote(
     )
     val message = try {
         poll.addMessage(channel, addButtons = true, addToDatabase = false, guild = guild!!)
-    } catch (e: RequestException) {
-        respond {
-            content = translate("vote.create.missing_permissions.bot", arrayOf(channel.mention))
-        }
-        return
+    } catch (_: RequestException) {
+        discordError(translate("vote.create.missing_permissions.bot", arrayOf(channel.mention)))
     }
     VoteBotDatabase.polls.save(poll.copy(messages = listOf(message.toPollMessage())))
 
     if (finalSettings.deleteAfter != null) {
         poll.addExpirationListener(channel.kord)
     }
+
+    return message
 }
 
 private suspend fun <A : Arguments> EphemeralSlashCommandContext<A, *>.attemptSendingDMs(): Boolean {

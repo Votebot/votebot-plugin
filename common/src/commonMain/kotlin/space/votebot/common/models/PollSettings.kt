@@ -82,10 +82,10 @@ public data class FinalPollSettings(
  */
 public fun PollSettings.merge(other: PollSettings?): FinalPollSettings = FinalPollSettings(
     deleteAfter ?: other?.deleteAfter,
-    showChartAfterClose ?: other?.showChartAfterClose ?: true,
+    (showChartAfterClose ?: other?.showChartAfterClose) != false,
     maxVotes ?: other?.maxVotes ?: 1,
     maxChanges ?: other?.maxChanges ?: 0,
-    hideResults ?: other?.hideResults ?: false,
-    publicResults ?: other?.publicResults ?: false,
+    (hideResults ?: other?.hideResults) == true,
+    (publicResults ?: other?.publicResults) == true,
     emojiMode ?: other?.emojiMode ?: PollSettings.EmojiMode.ON
 )

@@ -46,12 +46,9 @@ sourceSets {
 }
 
 tasks {
-//    assembleBot {
-//        val mikbotVersion = libs.versions.mikbot.get()
-////        bundledPlugins.addAll("gdpr@$mikbotVersion", "database-i18n@$mikbotVersion")
-//    }
     generateDefaultTranslationBundle {
-        defaultLocale = Locale.Builder().setLanguage("en").setRegion("US").build()
+        outputs.upToDateWhen { false }
+        defaultLocale = Locale.Builder().setLanguage("en").setRegion("GB").build()
     }
 }
 

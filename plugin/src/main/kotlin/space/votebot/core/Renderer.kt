@@ -93,8 +93,8 @@ suspend fun Poll.updateMessages(
         try {
             val messageBehavior = message.toBehavior(kord)
             val permissions = localSuspendLazy {
-                val permissionChannel = messageBehavior.channel.asChannelOfOrNull<TopGuildMessageChannel>() ?:
-                    messageBehavior.channel.asChannelOf<ThreadChannel>().parent.asChannel()
+                val permissionChannel = messageBehavior.channel.asChannelOfOrNull<TopGuildMessageChannel>()
+                    ?: messageBehavior.channel.asChannelOf<ThreadChannel>().parent.asChannel()
 
                 permissionChannel.getEffectivePermissions(kord.selfId)
             }
@@ -161,12 +161,14 @@ suspend fun Poll.toEmbed(
 
     val names = sortedOptions
         .map { (index, _, value, emoji) ->
-            val prefix = emoji?.toDiscordPartialEmoji()?.mention ?: "${index + 1}"
-            "$prefix. ${transformMessageSafe(value, TransformerContext(guild, kord, true))}"
+            val prefix = emoji?.toDiscordPartialEmoji()?.mention ?: "${index + 1}."
+            "$prefix ${transformMessageSafe(value, TransformerContext(guild, kord, true))}"
         }.joinToString(separator = "\n")
 
     val totalVotes = votes.sumOf(Poll.Vote::amount)
-    val results = if (!settings.hideResults || highlightWinner || overwriteHideResults) {
+    val results = if (options.isEmpty()) {
+        ""
+    } else if (!settings.hideResults || highlightWinner || overwriteHideResults) {
         val resultsText = sumUp()
             .joinToString(separator = "\n") { (option, _, votePercentage) ->
                 val blocksForOption = (votePercentage * blockBarLength).toInt()

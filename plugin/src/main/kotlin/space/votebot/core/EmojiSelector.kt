@@ -48,6 +48,7 @@ suspend fun FinalPollSettings.selectEmojis(
     optionCount: Int,
     poll: Poll? = null
 ): List<Poll.Option.ActualOption.Emoji> {
+
     val usedEmojis by lazy {
         poll?.options?.mapNotNull { (it as? Poll.Option.ActualOption)?.emoji }?.toSet() ?: emptySet()
     }

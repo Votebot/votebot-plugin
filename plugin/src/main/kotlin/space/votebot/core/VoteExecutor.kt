@@ -114,11 +114,10 @@ private suspend fun EventContext<GuildButtonInteractionCreateEvent>.onVote(guild
     }
 
     VoteBotDatabase.polls.save(newPoll)
+    if (poll.settings.hideResults) {
+        ack.createEphemeralFollowup {
+            content = translate("vote.voted", arrayOf(newPoll.options[option]))
+        }
+    }
     newPoll.updateMessages(interaction.kord, guild)
-// TODO: discuss this
-//    if (poll.settings.hideResults) {
-//        ack.followUpEphemeral {
-//            embeds.add(newPoll.toEmbed(ack.kord, highlightWinner = false, overwriteHideResults = true, guild = guild))
-//        }
-//    }
 }

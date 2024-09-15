@@ -67,13 +67,17 @@ suspend fun Poll.addMessage(
     return message
 }
 
+/**
+ * Returns whether all updates were successful.
+ */
 suspend fun Poll.updateMessages(
     kord: Kord,
     guild: GuildBehavior,
     removeButtons: Boolean = false,
     highlightWinner: Boolean = false,
     showChart: Boolean? = null,
-) {
+    deleteFailingMessages: Boolean = true
+): Boolean {
     val pieChart = if (highlightWinner && showChart ?: settings.showChartAfterClose && votes.isNotEmpty()) {
         runCatching {
             pieChartService
@@ -120,9 +124,11 @@ suspend fun Poll.updateMessages(
         }
     }
 
-    if (failedMessages.isNotEmpty()) {
+    if (failedMessages.isNotEmpty() && deleteFailingMessages) {
         VoteBotDatabase.polls.save(copy(messages = messages - failedMessages.toSet()))
     }
+
+    return failedMessages.isEmpty()
 }
 
 private suspend fun Poll.makeButtons(kord: Kord, guild: GuildBehavior): List<MessageComponentBuilder> =

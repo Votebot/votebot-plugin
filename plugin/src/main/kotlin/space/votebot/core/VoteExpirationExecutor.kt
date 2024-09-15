@@ -1,9 +1,11 @@
 package space.votebot.core
 
+import com.kotlindiscord.kord.extensions.utils.dm
 import dev.kord.common.annotation.KordExperimental
 import dev.kord.common.annotation.KordUnsafe
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.Kord
+import dev.schlaubi.mikbot.plugin.api.pluginSystem
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -37,6 +39,10 @@ fun Poll.addExpirationListener(kord: Kord) {
             delay(timeUntilExpiry)
         }
 
-        close(kord, guild = kord.unsafe.guild(Snowflake(guildId)))
+        close(kord, {
+            kord.getUser(Snowflake(authorId))!!.dm {
+                it()
+            }!!
+        }, pluginSystem::translate, guild = kord.unsafe.guild(Snowflake(guildId)))
     }
 }

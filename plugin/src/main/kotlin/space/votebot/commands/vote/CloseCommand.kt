@@ -3,9 +3,12 @@ package space.votebot.commands.vote
 import com.kotlindiscord.kord.extensions.commands.Arguments
 import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalBoolean
 import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
+import io.github.oshai.kotlinlogging.KotlinLogging
 import space.votebot.command.poll
 import space.votebot.core.VoteBotModule
 import space.votebot.core.close
+
+private val LOG = KotlinLogging.logger { }
 
 class CloseArguments : Arguments() {
     val poll by poll {
@@ -23,10 +26,12 @@ suspend fun VoteBotModule.closeCommand() = ephemeralSlashCommand(::CloseArgument
     description = "commands.close.description"
 
     action {
-        arguments.poll.close(channel.kord, arguments.showChart, guild!!)
-
-        respond {
-            content = translate("commands.close.success")
+        if (arguments.poll.close(channel.kord, ::respond, ::translate, arguments.showChart, guild!!)) {
+            respond {
+                content = translate("commands.close.success")
+            }
         }
     }
 }
+
+

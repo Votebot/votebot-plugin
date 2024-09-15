@@ -1,5 +1,8 @@
 package space.votebot.core
 
+import com.kotlindiscord.kord.extensions.components.components
+import com.kotlindiscord.kord.extensions.components.ephemeralButton
+import com.kotlindiscord.kord.extensions.components.types.emoji
 import com.kotlindiscord.kord.extensions.events.EventContext
 import com.kotlindiscord.kord.extensions.extensions.event
 import com.kotlindiscord.kord.extensions.utils.dm
@@ -10,6 +13,9 @@ import dev.kord.core.Kord
 import dev.kord.core.behavior.GuildBehavior
 import dev.kord.core.behavior.interaction.response.createEphemeralFollowup
 import dev.kord.core.event.interaction.GuildButtonInteractionCreateEvent
+import dev.kord.x.emoji.Emojis
+import dev.schlaubi.mikbot.plugin.api.util.MessageSender
+import dev.schlaubi.mikbot.plugin.api.util.Translator
 import io.ktor.client.request.forms.*
 import io.ktor.utils.io.jvm.javaio.*
 import kotlinx.coroutines.CoroutineScope
@@ -21,19 +27,66 @@ import space.votebot.util.reFetch
 
 private val VoteExecutor = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
-suspend fun Poll.close(kord: Kord, showChart: Boolean? = null, guild: GuildBehavior) {
+suspend fun Poll.close(
+    kord: Kord,
+    sendMessage: MessageSender,
+    translate: Translator,
+    showChart: Boolean? = null,
+    guild: GuildBehavior,
+    isRetry: Boolean = false,
+): Boolean {
     with(reFetch()) {
-        updateMessages(kord, removeButtons = true, highlightWinner = true, guild = guild, showChart = showChart)
+        val messageUpdateFailed = !updateMessages(
+            kord,
+            removeButtons = true,
+            highlightWinner = true,
+            guild = guild,
+            showChart = showChart,
+            deleteFailingMessages = false
+        )
 
-        VoteBotDatabase.polls.deleteOneById(id)
+        if (messageUpdateFailed) {
+            if (isRetry) {
+                sendMessage {
+                    content = translate("vote.close.error.again", "votebot")
+                }
+            } else {
+                sendMessage {
+                    content = translate("vote.close.error.generic", "votebot")
+                    embeds = mutableListOf(toEmbed(kord, guild, highlightWinner = true, overwriteHideResults = true))
 
-        if (settings.publicResults) {
+                    components {
+                        ephemeralButton {
+                            emoji(Emojis.repeat.toString())
+                            label = translate("common.retry", "votebot")
+
+                            action {
+                                removeAll()
+                                edit { components = mutableListOf() }
+                                close(kord, ::respond, translate, showChart, guild, isRetry = true)
+                            }
+                        }
+                    }
+
+                    if (settings.publicResults) {
+                        addFile("votes.csv", ChannelProvider(block = generateCSVFile(kord)::toByteReadChannel))
+                    }
+                }
+            }
+        }
+
+        if (settings.publicResults && !messageUpdateFailed && !isRetry) {
             kord.getUser(Snowflake(authorId))?.dm {
                 content = "This message contains the requested vote statistic for your poll: $title ($id)"
 
                 addFile("votes.csv", ChannelProvider(block = generateCSVFile(kord)::toByteReadChannel))
             }
         }
+        if (!messageUpdateFailed || isRetry) {
+            VoteBotDatabase.polls.deleteOneById(id)
+        }
+
+        return !messageUpdateFailed
     }
 }
 

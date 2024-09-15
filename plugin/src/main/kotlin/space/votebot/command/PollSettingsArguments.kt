@@ -79,13 +79,13 @@ fun PollSettings.EmojiMode.toChoiceEmoji() = when (this) {
 
 @OptIn(IKnowWhatIAmDoing::class)
 abstract class AbstractPollSettingsArguments : SortedArguments(), PollSettingsArguments {
-    override val maxVotes by maxVotes("How many times a user is allowed to vote")
-    override val maxChanges by maxChanges("How many times a user is allowed to change their vote")
-    override val hideResults: Boolean? by hideResults("Whether to show results only to people who voted or not")
-    override val publicResults: Boolean? by publicResults("Whether to share who voted for what with the author or not")
-    override val deleteAfterPeriod by voteDuration("Amount of time after which this poll should expire")
-    override val showChartAfterClose: Boolean? by showChart("Whether to show a chart after the poll finished or not")
-    private val emojiModeOption by emojiMode("How to use emojis in this poll")
+    override val maxVotes by maxVotes("poll.create.arguments.max_votes")
+    override val maxChanges by maxChanges("poll.create.arguments.max_changes")
+    override val hideResults: Boolean? by hideResults("poll.create.arguments.hide_results")
+    override val publicResults: Boolean? by publicResults("poll.create.arguments.public_results")
+    override val deleteAfterPeriod by voteDuration("poll.create.arguments.delete_after_period")
+    override val showChartAfterClose: Boolean? by showChart("poll.create.arguments.show_chart_after_close")
+    private val emojiModeOption by emojiMode("poll.create.arguments.emoji_mode_option")
     override val emojiMode: PollSettings.EmojiMode?
         get() = emojiModeOption?.mode
 }

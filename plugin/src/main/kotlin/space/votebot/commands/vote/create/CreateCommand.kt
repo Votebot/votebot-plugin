@@ -15,7 +15,6 @@ import com.kotlindiscord.kord.extensions.parsers.DurationParserException
 import com.kotlindiscord.kord.extensions.utils.getJumpUrl
 import dev.kord.common.asJavaLocale
 import dev.kord.common.entity.ButtonStyle
-import dev.kord.core.behavior.channel.asChannelOf
 import dev.kord.core.entity.channel.Channel
 import dev.kord.x.emoji.DiscordEmoji
 import dev.kord.x.emoji.Emojis
@@ -124,6 +123,7 @@ suspend fun VoteBotModule.createCommand() = ephemeralSlashCommand(::CreateArgume
 
                 lateinit var addOptionButton: InteractionButtonWithAction<*, *>
                 lateinit var removeOptionButton: InteractionButtonWithAction<*, *>
+                lateinit var submitButton: InteractionButtonWithAction<*, *>
 
                 addOptionButton = ephemeralButton(::AddOptionModal, row = 1) {
                     label = translate("commands.create.interactive.add_option.label")
@@ -143,6 +143,9 @@ suspend fun VoteBotModule.createCommand() = ephemeralSlashCommand(::CreateArgume
                             disable()
                         }
                         removeOptionButton.enable()
+                        if (poll.options.size >= 2) {
+                            submitButton.enable()
+                        }
                         update()
                     }
                 }
@@ -176,6 +179,9 @@ suspend fun VoteBotModule.createCommand() = ephemeralSlashCommand(::CreateArgume
                                         if (poll.options.isEmpty()) {
                                             disable()
                                         }
+                                        if (poll.options.size < 2) {
+                                            submitButton.disable()
+                                        }
                                         addOptionButton.enable()
                                         update()
                                         edit {
@@ -194,6 +200,7 @@ suspend fun VoteBotModule.createCommand() = ephemeralSlashCommand(::CreateArgume
                     emoji(Emojis.heavyCheckMark.toString())
                     label = translate("commands.create.interactive.submit")
                     bundle = this@createCommand.bundle
+                    disabled = true
 
                     action {
                         val settings = object : CreateSettings {

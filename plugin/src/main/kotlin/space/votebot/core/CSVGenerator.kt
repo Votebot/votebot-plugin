@@ -12,13 +12,19 @@ suspend fun Poll.generateCSV(kord: Kord): String = buildString {
     append(header)
     appendLine()
     votes.forEach {
-        append(kord.getUser(Snowflake(it.userId))?.username ?: "<unknown user>").append(it.userId)
+        appendSafe(kord.getUser(Snowflake(it.userId))?.username ?: "<unknown user>").append(it.userId)
         append(',')
-        append(it.forOption + 1)
+        append("${(options[it.forOption] as Poll.Option.ActualOption).option} (${it.forOption + 1})")
         append(',')
         append(it.amount)
         appendLine()
     }
+}
+
+private fun StringBuilder.appendSafe(string: String) = if (string.contains("\\s+".toRegex())) {
+    append('"').append(string).append('"')
+} else {
+    append(string)
 }
 
 suspend fun Poll.generateCSVFile(kord: Kord): InputStream = ByteArrayInputStream(generateCSV(kord).toByteArray())

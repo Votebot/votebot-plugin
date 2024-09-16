@@ -195,7 +195,7 @@ suspend fun VoteBotModule.createCommand() = ephemeralSlashCommand(::CreateArgume
                     }
                 }
 
-                ephemeralButton(row = 2) {
+                submitButton = ephemeralButton(row = 2) {
                     style = ButtonStyle.Success
                     emoji(Emojis.heavyCheckMark.toString())
                     label = translate("commands.create.interactive.submit")

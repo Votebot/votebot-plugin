@@ -25,11 +25,11 @@ class SetVoteChannelArguments : Arguments() {
 suspend fun SettingsModule.addGuildSettingsCommand() = ephemeralSlashCommand {
     name = "settings"
     description = "commands.settings.description"
-    bundle = "votebot"
     guildAdminOnly()
 
     ephemeralSubCommand(::SetVoteChannelArguments) {
         name = "set-vote-channel"
+        bundle = "votebot"
         description = "commands.settings.set_vote_channel.description"
 
         action {
@@ -48,6 +48,7 @@ suspend fun SettingsModule.addGuildSettingsCommand() = ephemeralSlashCommand {
 
     ephemeralSubCommand {
         name = "remove-vote-channel"
+        bundle = "votebot"
         description = "commands.settings.remove_vote_channel.description"
 
         action {

@@ -79,7 +79,7 @@ suspend fun VoteBotModule.createCommand() = ephemeralSlashCommand(::CreateArgume
             )
         )
         val emojis = currentSettings.selectEmojis(
-            guild,
+            voteSafeGuild,
             25
         )
         var poll = Poll(
@@ -104,7 +104,7 @@ suspend fun VoteBotModule.createCommand() = ephemeralSlashCommand(::CreateArgume
             components(10.minutes) {
                 suspend fun update() = edit {
                     val emojis = currentSettings.selectEmojis(
-                        guild,
+                        voteSafeGuild,
                         poll.options.size
                     )
                     // re-arrange emojis and update settings

@@ -20,7 +20,6 @@ import dev.kord.x.emoji.DiscordEmoji
 import dev.kord.x.emoji.Emojis
 import dev.schlaubi.mikbot.plugin.api.util.discordError
 import dev.schlaubi.mikbot.plugin.api.util.kord
-import dev.schlaubi.mikbot.plugin.api.util.safeGuild
 import dev.schlaubi.mikbot.plugin.api.util.toDuration
 import kotlinx.datetime.Clock
 import space.votebot.command.ChoiceEmojiMode
@@ -35,6 +34,7 @@ import space.votebot.core.VoteBotDatabase
 import space.votebot.core.VoteBotModule
 import space.votebot.core.selectEmojis
 import space.votebot.core.toEmbed
+import space.votebot.util.voteSafeGuild
 import java.util.Locale
 import kotlin.random.Random
 import kotlin.time.Duration.Companion.minutes
@@ -99,7 +99,7 @@ suspend fun VoteBotModule.createCommand() = ephemeralSlashCommand(::CreateArgume
 
         respond {
             content = translate("commands.create.interactive.status", arrayOf(channel.mention))
-            embeds = mutableListOf(poll.toEmbed(this@commandAction.kord, this@commandAction.safeGuild))
+            embeds = mutableListOf(poll.toEmbed(this@commandAction.kord, this@commandAction.voteSafeGuild))
 
             components(10.minutes) {
                 suspend fun update() = edit {
@@ -119,7 +119,7 @@ suspend fun VoteBotModule.createCommand() = ephemeralSlashCommand(::CreateArgume
                         },
                         settings = currentSettings
                     )
-                    embeds = mutableListOf(poll.toEmbed(this@commandAction.kord, this@commandAction.safeGuild))
+                    embeds = mutableListOf(poll.toEmbed(this@commandAction.kord, this@commandAction.voteSafeGuild))
                     applyComponents(this@components)
                 }
 

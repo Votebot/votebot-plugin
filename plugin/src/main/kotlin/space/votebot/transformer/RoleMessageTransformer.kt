@@ -7,6 +7,7 @@ object RoleMessageTransformer : RegexReplaceTransformer() {
     override val skipInMarkdownContext: Boolean = true
 
     override suspend fun TransformerContext.transform(match: MatchResult): String? {
+        if (guild == null) return null
         return try {
             val (userId) = match.destructured
             guild.getRoleOrNull(Snowflake(userId))?.name?.let { roleName ->

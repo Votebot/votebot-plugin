@@ -1,7 +1,8 @@
 package space.votebot.commands.vote.create
 
 import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingString
-import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
+import com.kotlindiscord.kord.extensions.extensions.publicSlashCommand
+import dev.kord.core.behavior.interaction.response.createEphemeralFollowup
 import dev.kord.core.entity.channel.Channel
 import space.votebot.command.AbstractPollSettingsArguments
 import space.votebot.common.models.PollSettings
@@ -24,13 +25,14 @@ class YesNoArguments : AbstractPollSettingsArguments(), CreateSettings {
     }
 }
 
-suspend fun VoteBotModule.yesNowCommand() = ephemeralSlashCommand(::YesNoArguments) {
+suspend fun VoteBotModule.yesNowCommand() = publicSlashCommand(::YesNoArguments) {
     name = "yes-no"
     description = "commands.yes_no.description"
+    voteCommandContext()
 
     action {
-        createVote()
-        respond {
+        createVote(interactionResponse)
+        interactionResponse.createEphemeralFollowup {
             content = translate("commands.yes_no.success")
         }
     }

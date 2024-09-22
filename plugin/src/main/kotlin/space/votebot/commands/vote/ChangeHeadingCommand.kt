@@ -4,6 +4,7 @@ import com.kotlindiscord.kord.extensions.commands.Arguments
 import com.kotlindiscord.kord.extensions.commands.converters.impl.string
 import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
 import space.votebot.command.poll
+import space.votebot.commands.vote.create.guildOnlyCommand
 import space.votebot.core.VoteBotModule
 import space.votebot.core.updateMessages
 
@@ -22,6 +23,7 @@ class ChangeHeadingArguments : Arguments() {
 suspend fun VoteBotModule.changeHeadingCommand() = ephemeralSlashCommand(::ChangeHeadingArguments) {
     name = "change-heading"
     description = "commands.change_heading.description"
+    guildOnlyCommand()
 
     action {
         val poll = arguments.poll
@@ -31,7 +33,7 @@ suspend fun VoteBotModule.changeHeadingCommand() = ephemeralSlashCommand(::Chang
         }
 
         if (newPoll.title != poll.title) {
-            newPoll.updateMessages(channel.kord, guild!!)
+            newPoll.updateMessages(channel.kord, guild)
         }
     }
 }

@@ -43,6 +43,6 @@ fun Poll.addExpirationListener(kord: Kord) {
             kord.getUser(Snowflake(authorId))!!.dm {
                 it()
             }!!
-        }, pluginSystem::translate, guild = kord.unsafe.guild(Snowflake(guildId)))
+        }, pluginSystem::translate, guild = guildId?.let { kord.unsafe.guild(Snowflake(it)) })
     }
 }

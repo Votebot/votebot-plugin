@@ -8,17 +8,19 @@ import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.Kord
 import dev.kord.core.behavior.GuildBehavior
-import dev.kord.core.behavior.channel.MessageChannelBehavior
 import dev.kord.core.behavior.channel.asChannelOf
 import dev.kord.core.behavior.channel.asChannelOfOrNull
-import dev.kord.core.behavior.channel.createMessage
-import dev.kord.core.behavior.edit
-import dev.kord.core.entity.Message
+import dev.kord.core.behavior.interaction.response.EphemeralMessageInteractionResponseBehavior
+import dev.kord.core.behavior.interaction.response.edit
+import dev.kord.core.builder.components.emoji
+import dev.kord.core.entity.ReactionEmoji
 import dev.kord.core.entity.channel.TopGuildMessageChannel
 import dev.kord.core.entity.channel.thread.ThreadChannel
 import dev.kord.rest.builder.component.ActionRowBuilder
 import dev.kord.rest.builder.component.MessageComponentBuilder
 import dev.kord.rest.builder.message.EmbedBuilder
+import dev.kord.rest.builder.message.modify.MessageModifyBuilder
+import dev.kord.x.emoji.Emojis
 import dev.schlaubi.mikbot.plugin.api.util.effectiveAvatar
 import dev.schlaubi.mikbot.plugin.api.util.embed
 import dev.schlaubi.stdx.coroutines.forEachParallel
@@ -34,8 +36,6 @@ import space.votebot.pie_char_service.client.PieChartServiceClient
 import space.votebot.pie_char_service.client.Vote
 import space.votebot.transformer.TransformerContext
 import space.votebot.transformer.transformMessageSafe
-import space.votebot.util.toBehavior
-import space.votebot.util.toPollMessage
 import java.text.DecimalFormat
 
 private val percentage = DecimalFormat("#.##%")
@@ -43,20 +43,21 @@ private val percentage = DecimalFormat("#.##%")
 const val block = "■"
 const val blockBarLength = 30
 
-private val pieChartService = PieChartServiceClient(VoteBotConfig.PIE_CHART_SERVICE_URL)
+val pieChartService = PieChartServiceClient(VoteBotConfig.PIE_CHART_SERVICE_URL)
 
 private val LOG = KotlinLogging.logger { }
 
 suspend fun Poll.addMessage(
-    channel: MessageChannelBehavior,
-    guild: GuildBehavior,
+    channel: VoteParentChannel,
+    closeButton: Boolean,
+    guild: GuildBehavior?,
     addButtons: Boolean,
     addToDatabase: Boolean,
-): Message {
+): VoteParentChannel.Message {
     val message = channel.createMessage {
         embeds = mutableListOf(toEmbed(channel.kord, guild, false))
         if (addButtons) {
-            components = makeButtons(channel.kord, guild).toMutableList()
+            components = makeButtons(channel.kord, closeButton, guild).toMutableList()
         }
     }
 
@@ -72,11 +73,13 @@ suspend fun Poll.addMessage(
  */
 suspend fun Poll.updateMessages(
     kord: Kord,
-    guild: GuildBehavior,
+    guild: GuildBehavior?,
     removeButtons: Boolean = false,
     highlightWinner: Boolean = false,
     showChart: Boolean? = null,
-    deleteFailingMessages: Boolean = true
+    deleteFailingMessages: Boolean = true,
+    exceptFor: List<ULong> = emptyList(),
+    response: EphemeralMessageInteractionResponseBehavior? = null,
 ): Boolean {
     val pieChart = if (highlightWinner && showChart ?: settings.showChartAfterClose && votes.isNotEmpty()) {
         runCatching {
@@ -89,40 +92,43 @@ suspend fun Poll.updateMessages(
 
     val failedMessages = mutableListOf<Poll.Message>()
 
-    messages.forEachParallel { message ->
-        try {
-            val messageBehavior = message.toBehavior(kord)
-            val permissions = localSuspendLazy {
-                val permissionChannel = messageBehavior.channel.asChannelOfOrNull<TopGuildMessageChannel>()
-                    ?: messageBehavior.channel.asChannelOf<ThreadChannel>().parent.asChannel()
-
-                permissionChannel.getEffectivePermissions(kord.selfId)
-            }
-            messageBehavior.edit {
-                if (pieChart != null) {
-                    if (Permission.AttachFiles in permissions()) {
-                        addFile("chart.png", ChannelProvider { pieChart })
+    require(response == null || messages.size == 1) { "Unsupported use case" }
+    messages
+        .filter { it.messageId !in exceptFor }
+        .forEachParallel { message ->
+            try {
+                val messageBehavior = message.toBehavior(kord)
+                val permissions = localSuspendLazy { messageBehavior.getEffectivePermissions(kord.selfId) }
+                val messageEditor: suspend MessageModifyBuilder.() -> Unit = {
+                    if (pieChart != null) {
+                        if (Permission.AttachFiles in permissions()) {
+                            addFile("chart.png", ChannelProvider { pieChart })
+                        } else {
+                            content = "Could not create pie chart due to missing permissions"
+                        }
                     } else {
-                        content = "Could not create pie chart due to missing permissions"
+                        content = ""
                     }
-                } else {
-                    content = ""
-                }
 
-                embeds = mutableListOf(toEmbed(kord, guild, highlightWinner))
-                components = if (removeButtons) {
-                    mutableListOf()
-                } else {
-                    makeButtons(kord, guild).toMutableList()
+                    embeds = mutableListOf(toEmbed(kord, guild, highlightWinner))
+                    components = if (removeButtons) {
+                        mutableListOf()
+                    } else {
+                        makeButtons(kord, message.interaction != null, guild).toMutableList()
+                    }
                 }
+                if (response == null) {
+                    message.toBehavior(kord).edit(messageEditor)
+                } else {
+                    response.edit { messageEditor() }
+                }
+                // yeah yeah I KNOW catching Exception is bad, but it isn't raly a huge problem here,
+                // since handling for all exception will remain the same
+            } catch (ignored: Exception) {
+                LOG.debug(ignored) { "An error occurred whilst updating a poll message" }
+                failedMessages += message
             }
-            // yeah yeah I KNOW catching Exception is bad, but it isn't raly a huge problem here,
-            // since handling for all exception will remain the same
-        } catch (ignored: Exception) {
-            LOG.debug(ignored) { "An error occurred whilst updating a poll message" }
-            failedMessages += message
         }
-    }
 
     if (failedMessages.isNotEmpty() && deleteFailingMessages) {
         VoteBotDatabase.polls.save(copy(messages = messages - failedMessages.toSet()))
@@ -131,7 +137,7 @@ suspend fun Poll.updateMessages(
     return failedMessages.isEmpty()
 }
 
-private suspend fun Poll.makeButtons(kord: Kord, guild: GuildBehavior): List<MessageComponentBuilder> =
+private suspend fun Poll.makeButtons(kord: Kord, closeButton: Boolean, guild: GuildBehavior?): List<MessageComponentBuilder> =
     sortedOptions
         .chunked(5)
         .map { options ->
@@ -143,11 +149,21 @@ private suspend fun Poll.makeButtons(kord: Kord, guild: GuildBehavior): List<Mes
                     }
                 }
             }
+        }.run {
+            if (closeButton) {
+                this + ActionRowBuilder().apply {
+                    interactionButton(ButtonStyle.Danger, "close") {
+                        label = "Close"
+                        emoji(ReactionEmoji.Unicode(Emojis.cross.toString()))
+                    }
+                }
+            } else {
+                this
+            }
         }
-
 suspend fun Poll.toEmbed(
     kord: Kord,
-    guild: GuildBehavior,
+    guild: GuildBehavior?,
     highlightWinner: Boolean = false,
     overwriteHideResults: Boolean = false,
 ): EmbedBuilder = embed {
@@ -231,7 +247,7 @@ suspend fun Poll.toEmbed(
     timestamp = createdAt
 }
 
-private suspend fun Poll.toPieChartCreateRequest(kord: Kord, guild: GuildBehavior): PieChartCreateRequest {
+suspend fun Poll.toPieChartCreateRequest(kord: Kord, guild: GuildBehavior?): PieChartCreateRequest {
     val votes = sumUp()
 
     return PieChartCreateRequest(

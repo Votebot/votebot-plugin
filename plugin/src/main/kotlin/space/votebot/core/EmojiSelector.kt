@@ -5,6 +5,7 @@ import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.GuildBehavior
 import dev.kord.x.emoji.DiscordEmoji
 import dev.kord.x.emoji.Emojis
+import dev.schlaubi.mikbot.plugin.api.util.discordError
 import kotlinx.coroutines.flow.toList
 import space.votebot.common.models.FinalPollSettings
 import space.votebot.common.models.Poll
@@ -44,18 +45,20 @@ private val fallbackEmojis = buildEmojiList {
 }
 
 suspend fun FinalPollSettings.selectEmojis(
-    guild: GuildBehavior,
+    guild: GuildBehavior?,
     optionCount: Int,
     poll: Poll? = null
 ): List<Poll.Option.ActualOption.Emoji> {
-
     val usedEmojis by lazy {
         poll?.options?.mapNotNull { (it as? Poll.Option.ActualOption)?.emoji }?.toSet() ?: emptySet()
+    }
+    if (emojiMode == PollSettings.EmojiMode.CUSTOM && guild == null) {
+        discordError("Cannot use custom emojis here")
     }
     return when (emojiMode) {
         PollSettings.EmojiMode.OFF -> emptyList()
         PollSettings.EmojiMode.ON -> selectDefaultEmojis(optionCount, usedEmojis)
-        PollSettings.EmojiMode.CUSTOM -> selectCustomEmojis(optionCount, usedEmojis, guild)
+        PollSettings.EmojiMode.CUSTOM -> selectCustomEmojis(optionCount, usedEmojis, guild!!)
     }
 }
 
@@ -85,8 +88,7 @@ private suspend fun selectCustomEmojis(
             Poll.Option.ActualOption.Emoji(
                 it.id.value, it.name
             )
-        } + filler.toPollEmoji()
-        ) - usedEmojis
+        } + filler.toPollEmoji()) - usedEmojis
 }
 
 private fun Iterable<DiscordEmoji>.toPollEmoji() = map { Poll.Option.ActualOption.Emoji(name = it.unicode, id = null) }
@@ -95,7 +97,7 @@ private fun <C : Collection<DiscordEmoji>> buildEmojiList(builder: Emojis.() -> 
 
 fun Poll.Option.ActualOption.Emoji.toDiscordPartialEmoji() = DiscordPartialEmoji(id?.let { Snowflake(it) }, name)
 
-suspend fun Poll.recalculateEmojis(guild: GuildBehavior): Poll {
+suspend fun Poll.recalculateEmojis(guild: GuildBehavior?): Poll {
     val emojis = settings.selectEmojis(
         guild,
         options.size

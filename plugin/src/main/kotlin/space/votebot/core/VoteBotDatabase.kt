@@ -5,8 +5,10 @@ import dev.kord.common.entity.Snowflake
 import dev.kord.core.entity.Message
 import dev.schlaubi.mikbot.plugin.api.io.getCollection
 import dev.schlaubi.mikbot.plugin.api.util.database
-import org.bson.Document
+import org.litote.kmongo.and
 import org.litote.kmongo.coroutine.CoroutineCollection
+import org.litote.kmongo.div
+import org.litote.kmongo.eq
 import space.votebot.common.models.Poll
 import space.votebot.models.GuildSettings
 import space.votebot.models.UserSettings
@@ -20,22 +22,15 @@ object VoteBotDatabase : KordExKoinComponent {
         .getCollection<GuildSettings>("guild_settings")
 }
 
-// For some reason KMongo cannot seem to serialize this properly
 suspend fun CoroutineCollection<Poll>.findOneByMessage(pollMessage: Poll.Message) =
     findOne(
-        Document.parse(
-            """{"messages": {"messageId": NumberLong("${pollMessage.messageId}"), 
-        |"channelId": NumberLong("${pollMessage.channelId}"),
-        |"guildId": NumberLong("${pollMessage.guildId}")}}
-        |""".trimMargin()
+        and(
+            Poll::messages / Poll.Message::messageId eq pollMessage.messageId,
+            Poll::messages / Poll.Message::channelId eq pollMessage.channelId,
         )
     )
 
 suspend fun CoroutineCollection<Poll>.findOneByMessage(message: Message) = findOneByMessage(message.toPollMessage())
 
 suspend fun CoroutineCollection<GuildSettings>.findOneByGuild(guildId: Snowflake) =
-    findOne(
-        Document.parse(
-            """{"guildId": NumberLong("$guildId")}""".trimIndent()
-        )
-    )
+    findOne(GuildSettings::guildId eq guildId)

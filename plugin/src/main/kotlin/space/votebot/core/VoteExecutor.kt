@@ -8,14 +8,26 @@ import com.kotlindiscord.kord.extensions.extensions.event
 import com.kotlindiscord.kord.extensions.utils.dm
 import dev.kord.common.annotation.KordExperimental
 import dev.kord.common.annotation.KordUnsafe
+import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.Kord
 import dev.kord.core.behavior.GuildBehavior
+import dev.kord.core.behavior.channel.asChannelOf
+import dev.kord.core.behavior.interaction.response.EphemeralMessageInteractionResponseBehavior
 import dev.kord.core.behavior.interaction.response.createEphemeralFollowup
+import dev.kord.core.behavior.interaction.response.edit
+import dev.kord.core.behavior.interaction.updatePublicMessage
+import dev.kord.core.entity.channel.GuildChannel
+import dev.kord.core.entity.channel.GuildMessageChannel
+import dev.kord.core.entity.channel.TopGuildMessageChannel
+import dev.kord.core.entity.channel.thread.ThreadChannel
+import dev.kord.core.event.interaction.ButtonInteractionCreateEvent
 import dev.kord.core.event.interaction.GuildButtonInteractionCreateEvent
+import dev.kord.gateway.Event
 import dev.kord.x.emoji.Emojis
 import dev.schlaubi.mikbot.plugin.api.util.MessageSender
 import dev.schlaubi.mikbot.plugin.api.util.Translator
+import dev.schlaubi.mikbot.plugin.api.util.discordError
 import io.ktor.client.request.forms.*
 import io.ktor.utils.io.jvm.javaio.*
 import kotlinx.coroutines.CoroutineScope
@@ -32,8 +44,9 @@ suspend fun Poll.close(
     sendMessage: MessageSender,
     translate: Translator,
     showChart: Boolean? = null,
-    guild: GuildBehavior,
+    guild: GuildBehavior?,
     isRetry: Boolean = false,
+    response: EphemeralMessageInteractionResponseBehavior? = null,
 ): Boolean {
     with(reFetch()) {
         val messageUpdateFailed = !updateMessages(
@@ -42,7 +55,8 @@ suspend fun Poll.close(
             highlightWinner = true,
             guild = guild,
             showChart = showChart,
-            deleteFailingMessages = false
+            deleteFailingMessages = false,
+            response = response
         )
 
         if (messageUpdateFailed) {
@@ -91,15 +105,49 @@ suspend fun Poll.close(
 }
 
 @OptIn(KordUnsafe::class, KordExperimental::class)
-suspend fun VoteBotModule.voteExecutor() = event<GuildButtonInteractionCreateEvent> {
+suspend fun VoteBotModule.voteExecutor() = event<ButtonInteractionCreateEvent> {
     action {
         VoteExecutor.launch {
-            onVote(kord.unsafe.guild(event.interaction.guildId))
+            val guild = (event as? GuildButtonInteractionCreateEvent)?.interaction?.guild
+            onClose(guild)
+            onVote(guild)
         }
     }
 }
 
-private suspend fun EventContext<GuildButtonInteractionCreateEvent>.onVote(guild: GuildBehavior) {
+private suspend fun EventContext<ButtonInteractionCreateEvent>.onClose(guild: GuildBehavior?) {
+    val interaction = event.interaction
+    if (interaction.componentId != "close") return
+    val ack = interaction.deferEphemeralMessageUpdate()
+
+    val message = interaction.message
+    val poll = VoteBotDatabase.polls.findOneByMessage(message) ?: run {
+        ack.createEphemeralFollowup { content = "This message is invalid" }
+        return
+    }
+
+    if (poll.authorId != interaction.user.id.value) {
+        if (guild != null) {
+            val channel = interaction.channel.asChannel()
+            val permissionChannel = if (channel is TopGuildMessageChannel) {
+                channel
+            } else {
+                (channel as ThreadChannel).parent
+            }
+            val permissions = permissionChannel.asChannel().getEffectivePermissions(event.kord.selfId)
+
+            if (Permission.ManageMessages !in permissions) {
+                discordError(translate("commands.generic.no_permission"))
+            }
+        } else {
+            discordError(translate("commands.generic.no_permission"))
+        }
+    }
+
+    poll.close(event.kord, { ack.createEphemeralFollowup { it() } }, ::translate, guild = guild, response = ack)
+}
+
+private suspend fun EventContext<ButtonInteractionCreateEvent>.onVote(guild: GuildBehavior?) {
     val interaction = event.interaction
     if (!interaction.componentId.startsWith("vote_")) return
     val ack = interaction.deferEphemeralMessageUpdate()
@@ -172,5 +220,13 @@ private suspend fun EventContext<GuildButtonInteractionCreateEvent>.onVote(guild
             content = translate("vote.voted", arrayOf(newPoll.options[option]))
         }
     }
-    newPoll.updateMessages(interaction.kord, guild)
+    // Update the message the suer clicked on using the interaction API
+    // This way we can use an up-to-date interaction token
+    ack.edit {
+        // Only set the embeds field here
+        // since we do not need to update buttons
+        // as the options have not changed
+        embeds = mutableListOf(newPoll.toEmbed(interaction.kord, guild))
+    }
+    newPoll.updateMessages(interaction.kord, guild, exceptFor = listOf(interaction.message.id.value))
 }

@@ -7,6 +7,7 @@ import space.votebot.core.VoteBotModule
 suspend fun VoteBotModule.commands() {
     createCommands()
     closeCommand()
+    closeMessageCommand()
     statusCommand()
     changeHeadingCommand()
     addOptionCommand()

@@ -3,6 +3,7 @@ package space.votebot.commands.vote
 import com.kotlindiscord.kord.extensions.extensions.publicSlashCommand
 import dev.kord.rest.builder.message.embed
 import dev.schlaubi.mikbot.plugin.api.MikBotInfo
+import dev.schlaubi.mikbot.plugin.api.util.executableEverywhere
 import dev.schlaubi.stdx.coroutines.parallelMapNotNull
 import io.ktor.client.*
 import io.ktor.client.call.*
@@ -69,6 +70,7 @@ private suspend fun findContributors() = repositories.parallelMapNotNull { repos
 suspend fun VoteBotModule.infoCommand() = publicSlashCommand {
     name = "info"
     description = "commands.info.description"
+    executableEverywhere()
 
     action {
         respond {

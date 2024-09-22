@@ -3,6 +3,7 @@ package space.votebot.commands.settings
 import com.kotlindiscord.kord.extensions.commands.Arguments
 import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
 import dev.schlaubi.mikbot.plugin.api.settings.SettingsModule
+import dev.schlaubi.mikbot.plugin.api.util.executableEverywhere
 import space.votebot.command.PollSettingsArguments
 import space.votebot.command.decide
 import space.votebot.common.models.PollSettings
@@ -26,6 +27,7 @@ suspend fun SettingsModule.defaultOptionsCommand() = ephemeralSlashCommand(::Def
     name = "default-options"
     description = "commands.default_options.description"
     bundle = "votebot"
+    executableEverywhere()
 
     action {
         val currentSettings = VoteBotDatabase.userSettings.findOneById(user.id)?.settings

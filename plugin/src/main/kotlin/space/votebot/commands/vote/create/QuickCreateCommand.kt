@@ -27,9 +27,10 @@ class CreateOptions : AbstractPollSettingsArguments(), CreateSettings {
 suspend fun VoteBotModule.quickCommand() = ephemeralSlashCommand(::CreateOptions) {
     name = "quick-create-vote"
     description = "commands.create.descriptions"
+    voteCommandContext()
 
     action {
-        createVote()
+        createVote(interactionResponse)
         respond {
             content = translate("commands.create.success", arrayOf(arguments.title))
         }

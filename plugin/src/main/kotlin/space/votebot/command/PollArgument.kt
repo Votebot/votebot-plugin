@@ -1,6 +1,7 @@
 package space.votebot.command
 
 import com.kotlindiscord.kord.extensions.DiscordRelayedException
+import com.kotlindiscord.kord.extensions.checks.interactionFor
 import com.kotlindiscord.kord.extensions.commands.Argument
 import com.kotlindiscord.kord.extensions.commands.CommandContext
 import com.kotlindiscord.kord.extensions.commands.converters.SingleConverter
@@ -16,8 +17,6 @@ import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.channel.ChannelBehavior
 import dev.kord.core.behavior.channel.GuildMessageChannelBehavior
 import dev.kord.core.behavior.interaction.suggestString
-import dev.kord.core.entity.channel.GuildChannel
-import dev.kord.core.entity.channel.GuildMessageChannel
 import dev.kord.core.entity.interaction.AutoCompleteInteraction
 import dev.kord.core.entity.interaction.OptionValue
 import dev.kord.core.entity.interaction.StringOptionValue
@@ -94,7 +93,7 @@ class PollConverter(validator: Validator<Poll> = null) : SingleConverter<Poll>(v
             .find(
                 and(
                     Poll::authorId eq user.id.value,
-                    Poll::guildId eq (data.guildId.value ?: ULong.MIN_VALUE)
+                    Poll::guildId eq data.guildId.value?.value
                 )
             )
             .toList()
@@ -126,9 +125,9 @@ class PollConverter(validator: Validator<Poll> = null) : SingleConverter<Poll>(v
             }
 
             @Suppress("MagicNumber")
-            val gid: Snowflake = try {
-                Snowflake(split[0])
-            } catch (e: NumberFormatException) {
+            val gid: Snowflake? = try {
+                split.first().takeIf { it != "@me" }?.let(::Snowflake)
+            } catch (_: NumberFormatException) {
                 throw DiscordRelayedException(
                     context.translate("converters.message.error.invalidGuildId", replacements = arrayOf(split[0]))
                 )
@@ -137,7 +136,7 @@ class PollConverter(validator: Validator<Poll> = null) : SingleConverter<Poll>(v
             @Suppress("MagicNumber")
             val cid: Snowflake = try {
                 Snowflake(split[1])
-            } catch (e: NumberFormatException) {
+            } catch (_: NumberFormatException) {
                 throw DiscordRelayedException(
                     context.translate(
                         "converters.message.error.invalidChannelId",
@@ -146,24 +145,14 @@ class PollConverter(validator: Validator<Poll> = null) : SingleConverter<Poll>(v
                 )
             }
 
-            val channel: GuildChannel? = kord.getGuildOrNull(gid)?.getChannel(cid)
-
-            if (channel == null) {
-                LOG.trace { "Unable to find channel ($cid) for guild ($gid)." }
-
-                errorNoMessage(arg, context)
-            }
-
-            if (channel !is GuildMessageChannel) {
-                LOG.trace { "Specified channel ($cid) is not a guild message channel." }
-
-                errorNoMessage(arg, context)
-            }
+            val channel = gid?.let {
+                kord.getGuildOrNull(it)?.getChannel(cid)?.id
+            } ?: interactionFor(context.eventObj)!!.channelId
 
             @Suppress("MagicNumber")
             val mid: Snowflake = try {
                 Snowflake(split[2])
-            } catch (e: NumberFormatException) {
+            } catch (_: NumberFormatException) {
                 throw DiscordRelayedException(
                     context.translate(
                         "converters.message.error.invalidMessageId",
@@ -172,7 +161,7 @@ class PollConverter(validator: Validator<Poll> = null) : SingleConverter<Poll>(v
                 )
             }
 
-            Poll.Message(mid.value, channel.id.value, channel.guildId.value)
+            Poll.Message(mid.value, channel.value, gid?.value)
         } else { // Try a message ID
             val channel: ChannelBehavior = context.getChannel()
 

@@ -1,48 +1,77 @@
 package space.votebot.commands.vote.create
 
+import com.kotlindiscord.kord.extensions.DiscordRelayedException
 import com.kotlindiscord.kord.extensions.commands.Arguments
 import com.kotlindiscord.kord.extensions.commands.application.slash.EphemeralSlashCommandContext
+import com.kotlindiscord.kord.extensions.commands.application.slash.PublicSlashCommandContext
+import com.kotlindiscord.kord.extensions.commands.application.slash.SlashCommandContext
+import dev.kord.common.entity.ApplicationIntegrationType
+import dev.kord.common.entity.InteractionContextType
 import dev.kord.common.exception.RequestException
 import dev.kord.core.Kord
 import dev.kord.core.behavior.channel.asChannelOf
-import dev.kord.core.entity.Message
+import dev.kord.core.behavior.interaction.response.FollowupPermittingInteractionResponseBehavior
 import dev.kord.core.entity.channel.GuildMessageChannel
+import dev.kord.rest.builder.message.MessageBuilder
+import dev.schlaubi.mikbot.plugin.api.util.Confirmation
+import dev.schlaubi.mikbot.plugin.api.util.Translator
 import dev.schlaubi.mikbot.plugin.api.util.confirmation
 import dev.schlaubi.mikbot.plugin.api.util.discordError
-import dev.schlaubi.mikbot.plugin.api.util.safeGuild
 import kotlinx.datetime.Clock
 import org.litote.kmongo.newId
 import space.votebot.common.models.Poll
 import space.votebot.common.models.merge
 import space.votebot.core.*
 import space.votebot.util.checkPermissions
-import space.votebot.util.toPollMessage
+import space.votebot.util.voteSafeGuild
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.minutes
+import kotlin.time.Duration.Companion.seconds
 
-suspend fun <A> EphemeralSlashCommandContext<A, *>.createVote()
-    where A : Arguments, A : CreateSettings = createVote { arguments }
+suspend fun <A> SlashCommandContext<*, A, *>.createVote(response: FollowupPermittingInteractionResponseBehavior)
+    where A : Arguments, A : CreateSettings = createVote(response) { arguments }
 
-suspend fun <A : Arguments> EphemeralSlashCommandContext<A, *>.createVote(
+suspend fun <A : Arguments> SlashCommandContext<*, A, *>.createVote(
+    response: FollowupPermittingInteractionResponseBehavior,
     settings: CreateSettings
-): Message? = createVote { settings }
+) = createVote(response) { settings }
 
-suspend fun <A : Arguments> EphemeralSlashCommandContext<A, *>.createVote(
-    optionProvider: EphemeralSlashCommandContext<A, *>.() -> CreateSettings
-): Message? {
+suspend fun <A : Arguments> SlashCommandContext<*, A, *>.createVote(
+    response: FollowupPermittingInteractionResponseBehavior,
+    optionProvider: SlashCommandContext<*, A, *>.() -> CreateSettings
+): VoteParentChannel.Message? {
     val kord = getKoin().get<Kord>()
     val settings = optionProvider()
-    val guildVoteChannel = VoteBotDatabase.guildSettings.findOneByGuild(guild!!.id)?.voteChannelId?.let {
-        kord.getChannelOf<GuildMessageChannel>(it)
+    val guildVoteChannel = guild?.let {
+        VoteBotDatabase.guildSettings.findOneByGuild(it.id)?.voteChannelId?.let {
+            kord.getChannelOf<GuildMessageChannel>(it)
+        }
     }
-    val channel = (guildVoteChannel ?: settings.channel ?: this.channel).asChannelOf<GuildMessageChannel>()
+    val isGuildInstall =
+        event.interaction.authorizingIntegrationOwners.containsKey(ApplicationIntegrationType.GuildInstall)
+    val channel = when {
+        isGuildInstall -> {
+            val guildChannel = (guildVoteChannel ?: settings.channel ?: this.channel).asChannelOf<GuildMessageChannel>()
+            checkPermissions(guildChannel)
+            guildChannel.toVoteParentChannel()
+        }
 
-    checkPermissions(channel)
+        settings.channel != null -> discordError(translate("vote.create.channel_context_error"))
+        else -> response.toVoteParentChannel(event.interaction.channelId)
+    }
+
+    settings.settings.deleteAfter?.let { checkDuration(it) }
 
     if (settings.answers.size < 2) {
         discordError(translate("vote.create.not_enough_options"))
     }
 
-    if (settings.answers.size > 25) {
-        discordError(translate("vote.create.too_many_options"))
+    if (isGuildInstall) {
+        if (settings.answers.size > 25) {
+            discordError(translate("vote.create.too_many_options"))
+        }
+    } else if (settings.answers.size > 25) {
+        discordError(translate("vote.create.too_many_options.user_mode"))
     }
 
     val toLongOption = settings.answers.firstOrNull {
@@ -65,13 +94,13 @@ suspend fun <A : Arguments> EphemeralSlashCommandContext<A, *>.createVote(
     }
 
     val emojis = finalSettings.selectEmojis(
-        safeGuild,
+        voteSafeGuild,
         settings.answers.size
     )
 
     val poll = Poll(
         newId<Poll>().toString(),
-        safeGuild.id.value,
+        guild?.id?.value,
         user.id.value,
         settings.title,
         settings.answers.mapIndexed { index, it ->
@@ -84,7 +113,7 @@ suspend fun <A : Arguments> EphemeralSlashCommandContext<A, *>.createVote(
         finalSettings
     )
     val message = try {
-        poll.addMessage(channel, addButtons = true, addToDatabase = false, guild = guild!!)
+        poll.addMessage(channel, addButtons = true, addToDatabase = false, closeButton = !isGuildInstall, guild = guild)
     } catch (_: RequestException) {
         discordError(translate("vote.create.missing_permissions.bot", arrayOf(channel.mention)))
     }
@@ -97,7 +126,7 @@ suspend fun <A : Arguments> EphemeralSlashCommandContext<A, *>.createVote(
     return message
 }
 
-private suspend fun <A : Arguments> EphemeralSlashCommandContext<A, *>.attemptSendingDMs(): Boolean {
+private suspend fun <A : Arguments> SlashCommandContext<*, A, *>.attemptSendingDMs(): Boolean {
     if (user.getDmChannelOrNull() == null) {
         val (agreed) = confirmation(
             yesWord = translate("vote.create.retry"),
@@ -112,4 +141,28 @@ private suspend fun <A : Arguments> EphemeralSlashCommandContext<A, *>.attemptSe
     }
 
     return true
+}
+
+private suspend fun SlashCommandContext<*, *, *>.confirmation(
+    yesWord: String,
+    noWord: String,
+    messageBuilder: suspend MessageBuilder.() -> Unit
+): Confirmation {
+    return when (this) {
+        is EphemeralSlashCommandContext<*, *> -> confirmation(yesWord, noWord, messageBuilder = messageBuilder)
+        is PublicSlashCommandContext<*, *> -> confirmation(yesWord, noWord, messageBuilder = messageBuilder)
+        else -> error("Unexpected command context: $this")
+    }
+}
+
+suspend fun SlashCommandContext<*, *, *>.checkDuration(duration: Duration) {
+    if (!event.interaction.authorizingIntegrationOwners.containsKey(ApplicationIntegrationType.GuildInstall)
+        && duration > 10.minutes
+    ) {
+        if (event.interaction.context == InteractionContextType.Guild) {
+            discordError(translate("vote.create.invalid_duration.guild", "votebot"))
+        } else {
+            discordError(translate("vote.create.invalid_duration.dm", "votebot"))
+        }
+    }
 }

@@ -14,6 +14,7 @@ import com.kotlindiscord.kord.extensions.parsers.DurationParser
 import com.kotlindiscord.kord.extensions.parsers.DurationParserException
 import com.kotlindiscord.kord.extensions.utils.getJumpUrl
 import dev.kord.common.asJavaLocale
+import dev.kord.common.entity.ApplicationIntegrationType
 import dev.kord.common.entity.ButtonStyle
 import dev.kord.core.entity.channel.Channel
 import dev.kord.x.emoji.DiscordEmoji
@@ -68,6 +69,7 @@ private class SetDurationModal : ModalForm() {
 suspend fun VoteBotModule.createCommand() = ephemeralSlashCommand(::CreateArguments) {
     name = "create-vote"
     description = "commands.create.interactive.description"
+    voteCommandContext()
 
     action commandAction@{
         var currentSettings = (VoteBotDatabase.userSettings.findOneById(user.id)?.settings
@@ -78,7 +80,7 @@ suspend fun VoteBotModule.createCommand() = ephemeralSlashCommand(::CreateArgume
             )
         )
         val emojis = currentSettings.selectEmojis(
-            safeGuild,
+            guild,
             25
         )
         var poll = Poll(
@@ -94,6 +96,8 @@ suspend fun VoteBotModule.createCommand() = ephemeralSlashCommand(::CreateArgume
             currentSettings
         )
         val channel = (arguments.channel ?: channel).asChannel()
+        val isGuildInstall = event.interaction.authorizingIntegrationOwners.containsKey(ApplicationIntegrationType.GuildInstall)
+        val maxOptions = if(isGuildInstall) 25 else 20
 
         respond {
             content = translate("commands.create.interactive.status", arrayOf(channel.mention))
@@ -102,8 +106,8 @@ suspend fun VoteBotModule.createCommand() = ephemeralSlashCommand(::CreateArgume
             components(10.minutes) {
                 suspend fun update() = edit {
                     val emojis = currentSettings.selectEmojis(
-                        safeGuild,
-                        25
+                        guild,
+                        poll.options.size
                     )
                     // re-arrange emojis and update settings
                     poll = poll.copy(
@@ -139,7 +143,7 @@ suspend fun VoteBotModule.createCommand() = ephemeralSlashCommand(::CreateArgume
                                 emojis[poll.options.size]
                             )
                         )
-                        if (poll.options.size == 25) {
+                        if (poll.options.size == maxOptions) {
                             disable()
                         }
                         removeOptionButton.enable()
@@ -212,7 +216,7 @@ suspend fun VoteBotModule.createCommand() = ephemeralSlashCommand(::CreateArgume
                         }
 
                         val vote = try {
-                            this@commandAction.createVote(settings) ?: return@action
+                            this@commandAction.createVote(interactionResponse, settings) ?: return@action
                         } catch (e: DiscordRelayedException) {
                             respond {
                                 content = e.reason
@@ -225,10 +229,11 @@ suspend fun VoteBotModule.createCommand() = ephemeralSlashCommand(::CreateArgume
 
                                         action {
                                             edit { components = mutableListOf() }
-                                            val vote = this@commandAction.createVote(settings) ?: return@action
+                                            val vote = this@commandAction.createVote(interactionResponse, settings)
+                                                ?: return@action
 
                                             this@commandAction.edit {
-                                                content = translate("commands.create.done", arrayOf(vote.getJumpUrl()))
+                                                content = translate("commands.create.done", arrayOf(vote.jumpUrl))
                                                 components = mutableListOf()
                                                 embeds = mutableListOf()
                                             }
@@ -240,7 +245,7 @@ suspend fun VoteBotModule.createCommand() = ephemeralSlashCommand(::CreateArgume
                         }
 
                         this@commandAction.edit {
-                            content = translate("commands.create.done", arrayOf(vote.getJumpUrl()))
+                            content = translate("commands.create.done", arrayOf(vote.jumpUrl))
                             components = mutableListOf()
                             embeds = mutableListOf()
                         }
@@ -309,22 +314,26 @@ suspend fun VoteBotModule.createCommand() = ephemeralSlashCommand(::CreateArgume
                                     copy(showChartAfterClose = it)
                                 }
 
-                                ephemeralButton(::SetDurationModal, row = 2) {
-                                    bundle = this@createCommand.bundle
-                                    emoji(Emojis.clock.toString())
-                                    label = translate("commands.create.interactive.set_duration.label")
+                                if(isGuildInstall) {
+                                    ephemeralButton(::SetDurationModal, row = 2) {
+                                        bundle = this@createCommand.bundle
+                                        emoji(Emojis.clock.toString())
+                                        label = translate("commands.create.interactive.set_duration.label")
 
-                                    action { modal ->
-                                        try {
-                                            val duration =
-                                                DurationParser.parse(
-                                                    modal!!.duration.value!!,
-                                                    event.interaction.locale?.asJavaLocale() ?: Locale.ENGLISH
-                                                )
-                                            currentSettings = currentSettings.copy(deleteAfter = duration.toDuration())
-                                            update()
-                                        } catch (e: DurationParserException) {
-                                            discordError(e.message!!)
+                                        action { modal ->
+                                            try {
+                                                val duration =
+                                                    DurationParser.parse(
+                                                        modal!!.duration.value!!,
+                                                        event.interaction.locale?.asJavaLocale() ?: Locale.ENGLISH
+                                                    ).toDuration()
+                                                checkDuration(duration)
+
+                                                currentSettings = currentSettings.copy(deleteAfter = duration)
+                                                update()
+                                            } catch (e: DurationParserException) {
+                                                discordError(e.message!!)
+                                            }
                                         }
                                     }
                                 }

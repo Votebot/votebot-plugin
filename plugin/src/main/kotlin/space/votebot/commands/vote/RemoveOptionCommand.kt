@@ -4,8 +4,8 @@ import com.kotlindiscord.kord.extensions.commands.Arguments
 import com.kotlindiscord.kord.extensions.commands.converters.impl.int
 import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
 import dev.schlaubi.mikbot.plugin.api.util.discordError
-import dev.schlaubi.mikbot.plugin.api.util.safeGuild
 import space.votebot.command.poll
+import space.votebot.commands.vote.create.guildOnlyCommand
 import space.votebot.common.models.Poll
 import space.votebot.core.VoteBotDatabase
 import space.votebot.core.VoteBotModule
@@ -29,6 +29,7 @@ class RemoveOptionArguments : Arguments() {
 suspend fun VoteBotModule.removeOptionCommand() = ephemeralSlashCommand(::RemoveOptionArguments) {
     name = "remove-option"
     description = "commands.remove_option.description"
+    guildOnlyCommand()
 
     action {
         val poll = arguments.poll
@@ -46,7 +47,7 @@ suspend fun VoteBotModule.removeOptionCommand() = ephemeralSlashCommand(::Remove
         val newVotes = poll.votes.filterNot { (forOption) ->
             forOption == selectedOption.index
         }
-        val newPoll = poll.copy(options = newOptions, votes = newVotes).recalculateEmojis(safeGuild)
+        val newPoll = poll.copy(options = newOptions, votes = newVotes).recalculateEmojis(guild)
 
         VoteBotDatabase.polls.save(newPoll)
         newPoll.updateMessages(channel.kord, guild!!)
@@ -56,7 +57,7 @@ suspend fun VoteBotModule.removeOptionCommand() = ephemeralSlashCommand(::Remove
                 arrayOf(
                     transformMessageSafe(
                         selectedOption.option,
-                        TransformerContext(guild!!, this@removeOptionCommand.kord, true)
+                        TransformerContext(guild, this@removeOptionCommand.kord, true)
                     )
                 )
             )

@@ -5,8 +5,8 @@ import com.kotlindiscord.kord.extensions.commands.converters.impl.optionalInt
 import com.kotlindiscord.kord.extensions.commands.converters.impl.string
 import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
 import dev.schlaubi.mikbot.plugin.api.util.discordError
-import dev.schlaubi.mikbot.plugin.api.util.safeGuild
 import space.votebot.command.poll
+import space.votebot.commands.vote.create.voteCommandContext
 import space.votebot.common.models.Poll
 import space.votebot.core.VoteBotDatabase
 import space.votebot.core.VoteBotModule
@@ -32,6 +32,7 @@ class AddOptionArguments : Arguments() {
 suspend fun VoteBotModule.addOptionCommand() = ephemeralSlashCommand(::AddOptionArguments) {
     name = "add-option"
     description = "commands.add_option.description"
+    voteCommandContext()
 
     action {
         val poll = arguments.poll
@@ -45,10 +46,10 @@ suspend fun VoteBotModule.addOptionCommand() = ephemeralSlashCommand(::AddOption
             null
         )
 
-        val newPoll = poll.copy(options = poll.options + option).recalculateEmojis(safeGuild)
+        val newPoll = poll.copy(options = poll.options + option).recalculateEmojis(guild)
 
         VoteBotDatabase.polls.save(newPoll)
-        newPoll.updateMessages(channel.kord, guild!!)
+        newPoll.updateMessages(channel.kord, guild)
         respond {
             content = translate("commands.add_option.success", arrayOf(arguments.option))
         }

@@ -32,7 +32,7 @@ suspend fun transformMessageSafe(message: String, context: TransformerContext): 
 }
 
 class TransformerContext(
-    val guild: GuildBehavior,
+    val guild: GuildBehavior?,
     val kord: Kord,
     val inMarkdownContext: Boolean
 )

@@ -11,7 +11,7 @@ import space.votebot.common.models.Poll.Vote
 public data class Poll(
     @SerialName("_id")
     public val id: String,
-    public val guildId: ULong,
+    public val guildId: ULong?,
     public val authorId: ULong,
     public val title: String,
     public val options: List<Option>,
@@ -104,15 +104,30 @@ public data class Poll(
      *
      * @property messageId the id of the message
      * @property channelId the id of the channel the message is in
-     * @property guildId the id of the guild the message is on
+     * @property guildId the id of the guild the message is on (if any)
+     * @property interaction the [Interaction] owning this message (if any)
      */
     @Serializable
     public data class Message(
         public val messageId: ULong,
         public val channelId: ULong,
         // yes this is duplicated data, but maybe I will allow messages across guilds
-        public val guildId: ULong
-    )
+        public val guildId: ULong? = null,
+        public val interaction: Interaction? = null
+    ) {
+
+        /**
+         * Representation of an Interaction owning a message.
+         *
+         * @property id the id of the interaction
+         * @property token the interaction token
+         */
+        @Serializable
+        public data class Interaction(
+            val id: ULong,
+            val token: String
+        )
+    }
 }
 
 /**

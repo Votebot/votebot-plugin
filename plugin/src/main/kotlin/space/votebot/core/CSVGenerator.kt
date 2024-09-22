@@ -6,13 +6,14 @@ import space.votebot.common.models.Poll
 import java.io.ByteArrayInputStream
 import java.io.InputStream
 
-private val header = listOf("user_id", "vote_option", "amount").joinToString(separator = ",")
+private val header = listOf("user", "vote_option", "amount").joinToString(separator = ",")
 
 suspend fun Poll.generateCSV(kord: Kord): String = buildString {
     append(header)
     appendLine()
     votes.forEach {
-        appendSafe(kord.getUser(Snowflake(it.userId))?.username ?: "<unknown user>").append(it.userId)
+        appendSafe(kord.getUser(Snowflake(it.userId))?.username ?: "<unknown user>")
+            .append(" (").append(it.userId).append(')')
         append(',')
         append("${(options[it.forOption] as Poll.Option.ActualOption).option} (${it.forOption + 1})")
         append(',')

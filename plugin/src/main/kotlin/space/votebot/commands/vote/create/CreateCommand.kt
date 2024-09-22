@@ -347,7 +347,9 @@ suspend fun VoteBotModule.createCommand() = ephemeralSlashCommand(::CreateArgume
                                     }
                                     render()
 
-                                    ChoiceEmojiMode.entries.forEach {
+                                    ChoiceEmojiMode.entries
+                                        .filter { isGuildInstall || it != ChoiceEmojiMode.CUSTOM }
+                                        .forEach {
                                         val label = translate(
                                             "commands.create.interactive.emoji_mode.place_holder",
                                             arrayOf(translate(it.readableName))

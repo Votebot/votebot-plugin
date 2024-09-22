@@ -12,7 +12,6 @@ import com.kotlindiscord.kord.extensions.components.types.emoji
 import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
 import com.kotlindiscord.kord.extensions.parsers.DurationParser
 import com.kotlindiscord.kord.extensions.parsers.DurationParserException
-import com.kotlindiscord.kord.extensions.utils.getJumpUrl
 import dev.kord.common.asJavaLocale
 import dev.kord.common.entity.ApplicationIntegrationType
 import dev.kord.common.entity.ButtonStyle

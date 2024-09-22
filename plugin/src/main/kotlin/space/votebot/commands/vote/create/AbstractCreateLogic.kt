@@ -1,6 +1,5 @@
 package space.votebot.commands.vote.create
 
-import com.kotlindiscord.kord.extensions.DiscordRelayedException
 import com.kotlindiscord.kord.extensions.commands.Arguments
 import com.kotlindiscord.kord.extensions.commands.application.slash.EphemeralSlashCommandContext
 import com.kotlindiscord.kord.extensions.commands.application.slash.PublicSlashCommandContext
@@ -14,7 +13,6 @@ import dev.kord.core.behavior.interaction.response.FollowupPermittingInteraction
 import dev.kord.core.entity.channel.GuildMessageChannel
 import dev.kord.rest.builder.message.MessageBuilder
 import dev.schlaubi.mikbot.plugin.api.util.Confirmation
-import dev.schlaubi.mikbot.plugin.api.util.Translator
 import dev.schlaubi.mikbot.plugin.api.util.confirmation
 import dev.schlaubi.mikbot.plugin.api.util.discordError
 import kotlinx.datetime.Clock
@@ -26,7 +24,6 @@ import space.votebot.util.checkPermissions
 import space.votebot.util.voteSafeGuild
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
-import kotlin.time.Duration.Companion.seconds
 
 suspend fun <A> SlashCommandContext<*, A, *>.createVote(response: FollowupPermittingInteractionResponseBehavior)
     where A : Arguments, A : CreateSettings = createVote(response) { arguments }

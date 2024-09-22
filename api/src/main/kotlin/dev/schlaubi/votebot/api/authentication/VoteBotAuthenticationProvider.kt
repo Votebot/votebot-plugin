@@ -1,6 +1,5 @@
 package dev.schlaubi.votebot.api.authentication
 
-import io.jsonwebtoken.JwtException
 import io.ktor.client.plugins.*
 import io.ktor.http.auth.*
 import io.ktor.server.application.*

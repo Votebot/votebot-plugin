@@ -9,8 +9,6 @@ import dev.kord.common.entity.Permission
 import dev.kord.core.behavior.edit
 import dev.schlaubi.mikbot.plugin.api.util.discordError
 import io.github.oshai.kotlinlogging.KotlinLogging
-import io.ktor.client.request.forms.ChannelProvider
-import jdk.internal.joptsimple.internal.Messages.message
 import space.votebot.command.poll
 import space.votebot.commands.vote.create.guildOnlyCommand
 import space.votebot.commands.vote.create.voteCommandContext
@@ -18,9 +16,6 @@ import space.votebot.core.VoteBotDatabase
 import space.votebot.core.VoteBotModule
 import space.votebot.core.close
 import space.votebot.core.findOneByMessage
-import space.votebot.core.pieChartService
-import space.votebot.core.toEmbed
-import space.votebot.core.toPieChartCreateRequest
 
 private val LOG = KotlinLogging.logger { }
 

@@ -132,10 +132,16 @@ private suspend fun EventContext<ButtonInteractionCreateEvent>.onClose(guild: Gu
             val permissions = permissionChannel.asChannel().getEffectivePermissions(event.kord.selfId)
 
             if (Permission.ManageMessages !in permissions) {
-                discordError(translate("commands.generic.no_permission"))
+                ack.createEphemeralFollowup {
+                    content = translate("vote.close.failed.missing_permission")
+                }
+                return
             }
         } else {
-            discordError(translate("commands.generic.no_permission"))
+            ack.createEphemeralFollowup {
+                content = translate("vote.close.failed.missing_permission")
+            }
+            return
         }
     }
 

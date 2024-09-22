@@ -94,8 +94,7 @@ suspend fun VoteBotModule.createCommand() = ephemeralSlashCommand(::CreateArgume
             Clock.System.now(),
             currentSettings
         )
-        val channel = (arguments.channel ?: channel).asChannel()
-        val isGuildInstall = event.interaction.authorizingIntegrationOwners.containsKey(ApplicationIntegrationType.GuildInstall)
+         val isGuildInstall = event.interaction.authorizingIntegrationOwners.containsKey(ApplicationIntegrationType.GuildInstall)
         val maxOptions = if(isGuildInstall) 25 else 20
 
         respond {
@@ -211,7 +210,7 @@ suspend fun VoteBotModule.createCommand() = ephemeralSlashCommand(::CreateArgume
                                 poll.options.map { (it as Poll.Option.ActualOption).option }
                             override val settings: PollSettings = poll.settings
                             override val title: String = poll.title
-                            override val channel: Channel? = channel
+                            override val channel: Channel? = arguments.channel
                         }
 
                         val vote = try {

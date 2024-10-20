@@ -5,7 +5,7 @@ plugins {
     alias(libs.plugins.kotlin.serialization) apply false
 }
 allprojects {
-    version = "5.6.1"
+    version = "5.7.0"
     group = "space.votebot"
 
     repositories {

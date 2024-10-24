@@ -7,10 +7,8 @@ import dev.schlaubi.mikbot.plugin.api.util.executableEverywhere
 import dev.schlaubi.stdx.coroutines.parallelMapNotNull
 import io.ktor.client.*
 import io.ktor.client.call.*
-import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.*
 import io.ktor.http.*
-import io.ktor.serialization.kotlinx.json.*
 import io.ktor.util.*
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -30,9 +28,9 @@ private val json = Json {
 }
 
 private val client = HttpClient {
-    install(ContentNegotiation) {
-        json(json)
-    }
+//    install(ContentNegotiation) {
+//        json(json)
+//    }
 }
 
 @Serializable

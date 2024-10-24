@@ -32,6 +32,10 @@ class VoteBotPlugin(wrapper: PluginContext) : Plugin(wrapper) {
                 enable = Config.ENVIRONMENT == Environment.PRODUCTION
             }
         }
+        kord {
+            // Disable non essential intents to keep down processing and traffic
+            intents(false, false) {}
+        }
         i18n {
             applicationCommandLocales.add(Locale.FRENCH)
         }

@@ -1,6 +1,6 @@
 [versions]
 kotlin = "2.0.21"
-mikbot = "3.37.5"
+mikbot = "3.37.3"
 ktor = "2.3.12"
 
 [libraries]

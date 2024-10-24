@@ -4,6 +4,7 @@ import com.kotlindiscord.kord.extensions.commands.Arguments
 import com.kotlindiscord.kord.extensions.commands.application.slash.ephemeralSubCommand
 import com.kotlindiscord.kord.extensions.commands.converters.impl.channel
 import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
+import dev.kord.common.entity.ApplicationIntegrationType
 import dev.kord.core.behavior.channel.asChannelOfOrNull
 import dev.kord.core.entity.channel.TopGuildMessageChannel
 import dev.schlaubi.mikbot.plugin.api.settings.SettingsModule
@@ -26,6 +27,7 @@ suspend fun SettingsModule.addGuildSettingsCommand() = ephemeralSlashCommand {
     name = "settings"
     description = "commands.settings.description"
     guildAdminOnly()
+    allowedInstallTypes.add(ApplicationIntegrationType.GuildInstall)
 
     ephemeralSubCommand(::SetVoteChannelArguments) {
         name = "set-vote-channel"

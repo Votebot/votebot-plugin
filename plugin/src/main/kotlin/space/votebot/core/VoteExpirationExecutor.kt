@@ -10,6 +10,7 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.datetime.Clock
+import org.litote.kmongo.and
 import org.litote.kmongo.div
 import org.litote.kmongo.eq
 import org.litote.kmongo.not
@@ -20,7 +21,7 @@ internal val ExpirationScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 private val expirationCache = mutableMapOf<String, Job>()
 
 suspend fun rescheduleAllPollExpires(kord: Kord) = coroutineScope {
-    VoteBotDatabase.polls.find(not(Poll::settings / FinalPollSettings::deleteAfter eq null))
+    VoteBotDatabase.polls.find(and(not(Poll::settings / FinalPollSettings::deleteAfter eq null), Poll::excludedFromScheduling eq false))
         .toFlow()
         .onEach { poll ->
             poll.addExpirationListener(kord)

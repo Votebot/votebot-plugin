@@ -22,7 +22,6 @@ import dev.kord.core.event.interaction.GuildButtonInteractionCreateEvent
 import dev.kord.x.emoji.Emojis
 import dev.schlaubi.mikbot.plugin.api.util.MessageSender
 import dev.schlaubi.mikbot.plugin.api.util.Translator
-import dev.schlaubi.mikbot.plugin.api.util.discordError
 import io.ktor.client.request.forms.*
 import io.ktor.utils.io.jvm.javaio.*
 import kotlinx.coroutines.CoroutineScope
@@ -55,6 +54,7 @@ suspend fun Poll.close(
         )
 
         if (messageUpdateFailed) {
+            VoteBotDatabase.polls.save(copy(excludedFromScheduling = true))
             if (isRetry) {
                 sendMessage {
                     content = translate("vote.close.error.again", "votebot")

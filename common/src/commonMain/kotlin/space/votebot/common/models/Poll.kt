@@ -19,7 +19,8 @@ public data class Poll(
     public val votes: List<Vote>,
     public val messages: List<Message>,
     public val createdAt: Instant,
-    public val settings: FinalPollSettings
+    public val settings: FinalPollSettings,
+    public val excludedFromScheduling: Boolean = false
 ) {
     /**
      * All [actual options][Option.ActualOption] sorted by [Option.position].

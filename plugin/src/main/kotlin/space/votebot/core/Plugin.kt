@@ -57,7 +57,7 @@ class VoteBotModule : Extension() {
 
         event<ReadyEvent> {
             action {
-                rescheduleAllPollExpires(kord)
+                //rescheduleAllPollExpires(kord)
             }
         }
     }

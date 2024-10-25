@@ -72,6 +72,8 @@ public data class Poll(
         public data class ActualOption(override val position: Int?, val option: String, val emoji: Emoji?) : Option() {
             @Serializable
             public data class Emoji(val id: ULong?, val name: String?)
+
+            override fun toString(): String = option
         }
 
         /**

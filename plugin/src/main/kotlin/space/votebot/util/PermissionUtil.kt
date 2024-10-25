@@ -8,20 +8,18 @@ import dev.kord.common.entity.Snowflake
 import dev.kord.core.entity.channel.GuildMessageChannel
 import dev.kord.core.entity.channel.TopGuildMessageChannel
 import dev.kord.core.entity.channel.thread.ThreadChannel
-import dev.kord.core.supplier.EntitySupplyStrategy
 import dev.schlaubi.mikbot.plugin.api.util.discordError
 
 suspend fun <A : Arguments> SlashCommandContext<*, A, *>.checkPermissions(channel: GuildMessageChannel) {
-    val restChannel = channel.withStrategy(EntitySupplyStrategy.rest)
-    val selfPermissions = restChannel.getEffectivePermissions(channel.kord.selfId)
+    val selfPermissions = channel.getEffectivePermissions(channel.kord.selfId)
     val requiredPermissions =
         Permissions(Permission.SendMessages, Permission.EmbedLinks, Permission.AttachFiles, Permission.ViewChannel)
     if (requiredPermissions !in selfPermissions) {
         discordError(translate("vote.create.missing_permissions.bot", arrayOf(channel.mention)))
     }
 
-    val userPermissions = restChannel.getEffectivePermissions(user.id)
-    if (requiredPermissions !in userPermissions) {
+    val userPermissions = channel.getEffectivePermissions(user.id)
+    if ((requiredPermissions -  Permission.ViewChannel) !in userPermissions) {
         discordError(translate("vote.create.missing_permissions.user", arrayOf(channel.mention)))
     }
 }

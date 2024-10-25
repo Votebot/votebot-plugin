@@ -5,6 +5,7 @@ import com.kotlindiscord.kord.extensions.extensions.Extension
 import com.kotlindiscord.kord.extensions.extensions.event
 import dev.kord.common.Locale
 import dev.kord.core.event.gateway.ReadyEvent
+import dev.kord.gateway.Intent
 import dev.schlaubi.mikbot.plugin.api.Plugin
 import dev.schlaubi.mikbot.plugin.api.PluginContext
 import dev.schlaubi.mikbot.plugin.api.PluginMain
@@ -34,7 +35,10 @@ class VoteBotPlugin(wrapper: PluginContext) : Plugin(wrapper) {
         }
         kord {
             // Disable non essential intents to keep down processing and traffic
-            intents(false, false) {}
+            intents(false, false) {
+                // Required for permissions
+                +Intent.Guilds
+            }
         }
         i18n {
             applicationCommandLocales.add(Locale.FRENCH)

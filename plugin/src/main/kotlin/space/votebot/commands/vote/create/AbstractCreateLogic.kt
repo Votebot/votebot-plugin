@@ -49,7 +49,7 @@ suspend fun <A : Arguments> SlashCommandContext<*, A, *>.createVote(
     val channel = when {
         isGuildInstall -> {
             val guildChannel = (guildVoteChannel ?: settings.channel ?: this.channel).asChannelOf<GuildMessageChannel>()
-            checkPermissions(guildChannel)
+            if(!checkPermissions(guildChannel)) return null
             guildChannel.toVoteParentChannel()
         }
 

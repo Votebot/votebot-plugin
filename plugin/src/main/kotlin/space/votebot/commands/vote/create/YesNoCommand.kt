@@ -31,7 +31,7 @@ suspend fun VoteBotModule.yesNowCommand() = publicSlashCommand(::YesNoArguments)
     voteCommandContext()
 
     action {
-        createVote(interactionResponse)
+        createVote(interactionResponse) ?: return@action
         interactionResponse.createEphemeralFollowup {
             content = translate("commands.yes_no.success")
         }

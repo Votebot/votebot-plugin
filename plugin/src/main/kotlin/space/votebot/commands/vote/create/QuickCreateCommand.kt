@@ -30,7 +30,7 @@ suspend fun VoteBotModule.quickCommand() = ephemeralSlashCommand(::CreateOptions
     voteCommandContext()
 
     action {
-        createVote(interactionResponse)
+        createVote(interactionResponse) ?: return@action
         respond {
             content = translate("commands.create.success", arrayOf(arguments.title))
         }

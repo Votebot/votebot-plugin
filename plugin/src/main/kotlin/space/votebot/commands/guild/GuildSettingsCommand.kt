@@ -37,7 +37,7 @@ suspend fun SettingsModule.addGuildSettingsCommand() = ephemeralSlashCommand {
         action {
             val channel = arguments.channel.asChannelOfOrNull<TopGuildMessageChannel>()
                 ?: discordError(translate("commands.create.invalid_channel"))
-            checkPermissions(channel)
+            if (!checkPermissions(channel)) return@action
 
             val guildSettings =
                 VoteBotDatabase.guildSettings.findOneByGuild(guild!!.id) ?: GuildSettings(newId(), guild!!.id, null)

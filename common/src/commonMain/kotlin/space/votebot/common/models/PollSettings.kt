@@ -80,12 +80,14 @@ public data class FinalPollSettings(
 /**
  * Merges this instance of [PollSettings] with [other] to create a [FinalPollSettings] instance.
  */
-public fun PollSettings.merge(other: PollSettings?): FinalPollSettings = FinalPollSettings(
-    deleteAfter ?: other?.deleteAfter,
-    (showChartAfterClose ?: other?.showChartAfterClose) != false,
-    maxVotes ?: other?.maxVotes ?: 1,
-    maxChanges ?: other?.maxChanges ?: 0,
-    (hideResults ?: other?.hideResults) == true,
-    (publicResults ?: other?.publicResults) == true,
-    emojiMode ?: other?.emojiMode ?: PollSettings.EmojiMode.ON
-)
+public fun PollSettings.merge(other: PollSettings?): FinalPollSettings {
+    return FinalPollSettings(
+        deleteAfter ?: other?.deleteAfter,
+        (showChartAfterClose ?: other?.showChartAfterClose) != false,
+        (maxVotes ?: other?.maxVotes ?: 1).takeIf { maxChanges == null || maxChanges == 1 } ?: 0,
+        (maxChanges ?: other?.maxChanges ?: 1).takeIf { maxVotes == null || maxVotes == 1 } ?: 0,
+        (hideResults ?: other?.hideResults) == true,
+        (publicResults ?: other?.publicResults) == true,
+        emojiMode ?: other?.emojiMode ?: PollSettings.EmojiMode.ON
+    )
+}

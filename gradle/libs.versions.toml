@@ -1,7 +1,7 @@
 [versions]
 kotlin = "2.0.21"
-mikbot = "3.37.14"
-ktor = "3.0.0"
+mikbot = "4.1.1"
+ktor = "3.0.1"
 
 [libraries]
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version = "1.7.3" }
@@ -14,12 +14,11 @@ mikbot-gdpr = { group = "dev.schlaubi", name = "mikbot-gdpr" }
 mikbot-kubernetes = { group = "dev.schlaubi", name = "mikbot-kubernetes" }
 mikbot-ktor = { group = "dev.schlaubi", name = "mikbot-ktor" }
 
-kordex-processor = { group = "com.kotlindiscord.kord.extensions", name = "annotation-processor", version = "1.9.1-mikbot-SNAPSHOT" }
 java-string-similarity = { group = "info.debatty", name = "java-string-similarity", version = "2.0.0" }
 
 [plugins]
 kotlin = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 mikbot = { id = "dev.schlaubi.mikbot.gradle-plugin", version.ref = "mikbot" }
-ksp = { id = "com.google.devtools.ksp", version = "2.0.21-1.0.25" }
-buildconfig = { id = "com.github.gmazzo.buildconfig", version = "5.4.0"}
+ksp = { id = "com.google.devtools.ksp", version = "2.0.21-1.0.26" }
+buildconfig = { id = "com.github.gmazzo.buildconfig", version = "5.5.0"}

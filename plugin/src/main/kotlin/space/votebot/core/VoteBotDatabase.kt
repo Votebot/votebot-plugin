@@ -1,8 +1,8 @@
 package space.votebot.core
 
-import com.kotlindiscord.kord.extensions.koin.KordExKoinComponent
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.entity.Message
+import dev.kordex.core.koin.KordExKoinComponent
 import dev.schlaubi.mikbot.plugin.api.io.getCollection
 import dev.schlaubi.mikbot.plugin.api.util.database
 import org.litote.kmongo.and

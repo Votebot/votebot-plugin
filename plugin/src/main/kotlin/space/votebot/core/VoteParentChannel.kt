@@ -1,6 +1,5 @@
 package space.votebot.core
 
-import com.kotlindiscord.kord.extensions.commands.application.slash.EphemeralSlashCommandContext
 import dev.kord.common.annotation.KordExperimental
 import dev.kord.common.annotation.KordUnsafe
 import dev.kord.common.entity.ALL
@@ -22,6 +21,7 @@ import dev.kord.core.entity.channel.TopGuildMessageChannel
 import dev.kord.core.entity.channel.thread.ThreadChannel
 import dev.kord.rest.builder.message.create.MessageCreateBuilder
 import dev.kord.rest.builder.message.modify.MessageModifyBuilder
+import dev.kordex.core.commands.application.slash.EphemeralSlashCommandContext
 import space.votebot.common.models.Poll
 
 @OptIn(KordUnsafe::class, KordExperimental::class)

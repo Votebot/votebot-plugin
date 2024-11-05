@@ -12,5 +12,6 @@ pluginManagement {
     repositories {
         gradlePluginPortal()
         google()
+        maven("https://releases-repo.kordex.dev")
     }
 }

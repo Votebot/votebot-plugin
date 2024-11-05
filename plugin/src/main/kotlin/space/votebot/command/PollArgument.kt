@@ -1,16 +1,5 @@
 package space.votebot.command
 
-import com.kotlindiscord.kord.extensions.DiscordRelayedException
-import com.kotlindiscord.kord.extensions.checks.interactionFor
-import com.kotlindiscord.kord.extensions.commands.Argument
-import com.kotlindiscord.kord.extensions.commands.CommandContext
-import com.kotlindiscord.kord.extensions.commands.converters.SingleConverter
-import com.kotlindiscord.kord.extensions.commands.converters.Validator
-import com.kotlindiscord.kord.extensions.commands.converters.builders.ConverterBuilder
-import com.kotlindiscord.kord.extensions.modules.annotations.converters.Converter
-import com.kotlindiscord.kord.extensions.modules.annotations.converters.ConverterType
-import com.kotlindiscord.kord.extensions.parser.StringParser
-import com.kotlindiscord.kord.extensions.utils.hasPermission
 import com.mongodb.client.model.Filters.and
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Snowflake
@@ -20,8 +9,24 @@ import dev.kord.core.behavior.interaction.suggestString
 import dev.kord.core.entity.interaction.AutoCompleteInteraction
 import dev.kord.core.entity.interaction.OptionValue
 import dev.kord.core.entity.interaction.StringOptionValue
-import dev.kord.rest.builder.interaction.OptionsBuilder
 import dev.kord.rest.builder.interaction.StringChoiceBuilder
+import dev.kordex.core.DiscordRelayedException
+import dev.kordex.core.annotations.InternalAPI
+import dev.kordex.core.annotations.converters.Converter
+import dev.kordex.core.annotations.converters.ConverterType
+import dev.kordex.core.checks.interactionFor
+import dev.kordex.core.commands.Argument
+import dev.kordex.core.commands.CommandContext
+import dev.kordex.core.commands.OptionWrapper
+import dev.kordex.core.commands.converters.SingleConverter
+import dev.kordex.core.commands.converters.Validator
+import dev.kordex.core.commands.converters.builders.ConverterBuilder
+import dev.kordex.core.i18n.EMPTY_KEY
+import dev.kordex.core.i18n.toKey
+import dev.kordex.core.i18n.types.Key
+import dev.kordex.core.i18n.withContext
+import dev.kordex.core.utils.hasPermission
+import dev.kordex.parser.StringParser
 import dev.schlaubi.mikbot.plugin.api.util.discordError
 import dev.schlaubi.mikbot.plugin.api.util.safeInput
 import dev.schlaubi.stdx.core.limit
@@ -31,6 +36,7 @@ import org.litote.kmongo.eq
 import space.votebot.common.models.Poll
 import space.votebot.core.VoteBotDatabase
 import space.votebot.core.findOneByMessage
+import space.votebot.translations.VoteBotTranslations
 import space.votebot.util.jumpUrl
 
 private val levenshtein = Levenshtein()
@@ -47,7 +53,7 @@ private val LOG = KotlinLogging.logger { }
 )
 // This is a modified version of: https://github.com/Kord-Extensions/kord-extensions/blob/f0334b7025d23874b37b2f9c82a1b12eb57efb0d/kord-extensions/src/main/kotlin/com/kotlindiscord/kord/extensions/commands/converters/impl/MessageConverter.kt
 class PollConverter(validator: Validator<Poll> = null) : SingleConverter<Poll>(validator) {
-    override val signatureTypeString: String = "Poll"
+    override val signatureType: Key = EMPTY_KEY
 
     override fun withBuilder(builder: ConverterBuilder<Poll>): SingleConverter<Poll> {
         val builderWithAutoComplete = builder.apply { autoComplete { onAutoComplete() } }
@@ -70,12 +76,12 @@ class PollConverter(validator: Validator<Poll> = null) : SingleConverter<Poll>(v
         val message = findMessage(text, context)
 
         val poll = VoteBotDatabase.polls.findOneByMessage(message)
-            ?: discordError(context.translate("commands.generic.poll_not_found"))
+            ?: discordError(VoteBotTranslations.Commands.Generic.pollNotFound)
         val user = context.getUser()
         if (user?.id?.value != poll.authorId &&
             context.getMember()?.run { asMember().hasPermission(Permission.ManageGuild) } != true
         ) {
-            discordError(context.translate("commands.generic.no_permission"))
+            discordError(VoteBotTranslations.Commands.Generic.noPermission)
         }
 
         parsed = poll
@@ -83,8 +89,9 @@ class PollConverter(validator: Validator<Poll> = null) : SingleConverter<Poll>(v
         return true
     }
 
-    override suspend fun toSlashOption(arg: Argument<*>): OptionsBuilder =
-        StringChoiceBuilder(arg.displayName, arg.description).apply { required = true }
+    @OptIn(InternalAPI::class)
+    override suspend fun toSlashOption(arg: Argument<*>) =
+        OptionWrapper(arg.displayName, arg.description, { required = true }, StringChoiceBuilder::class)
 
     private suspend fun AutoCompleteInteraction.onAutoComplete() {
         val safeInput = focusedOption.safeInput
@@ -120,7 +127,7 @@ class PollConverter(validator: Validator<Poll> = null) : SingleConverter<Poll>(v
             @Suppress("MagicNumber")
             if (split.size < 3) {
                 throw DiscordRelayedException(
-                    context.translate("converters.message.error.invalidUrl", replacements = arrayOf(arg))
+                    "converters.message.error.invalidUrl".toKey().withOrdinalPlaceholders(arg)
                 )
             }
 
@@ -129,7 +136,7 @@ class PollConverter(validator: Validator<Poll> = null) : SingleConverter<Poll>(v
                 split.first().takeIf { it != "@me" }?.let(::Snowflake)
             } catch (_: NumberFormatException) {
                 throw DiscordRelayedException(
-                    context.translate("converters.message.error.invalidGuildId", replacements = arrayOf(split[0]))
+                    "converters.message.error.invalidGuildId".toKey().withOrdinalPlaceholders(split[0])
                 )
             }
 
@@ -138,10 +145,7 @@ class PollConverter(validator: Validator<Poll> = null) : SingleConverter<Poll>(v
                 Snowflake(split[1])
             } catch (_: NumberFormatException) {
                 throw DiscordRelayedException(
-                    context.translate(
-                        "converters.message.error.invalidChannelId",
-                        replacements = arrayOf(split[1])
-                    )
+                    "converters.message.error.invalidChannelId".toKey().withOrdinalPlaceholders(split[1])
                 )
             }
 
@@ -154,10 +158,7 @@ class PollConverter(validator: Validator<Poll> = null) : SingleConverter<Poll>(v
                 Snowflake(split[2])
             } catch (_: NumberFormatException) {
                 throw DiscordRelayedException(
-                    context.translate(
-                        "converters.message.error.invalidMessageId",
-                        replacements = arrayOf(split[2])
-                    )
+                    "converters.message.error.invalidMessageId".toKey().withOrdinalPlaceholders(split[2])
                 )
             }
 
@@ -176,10 +177,7 @@ class PollConverter(validator: Validator<Poll> = null) : SingleConverter<Poll>(v
                 arg.toULong()
             } catch (e: NumberFormatException) {
                 throw DiscordRelayedException(
-                    context.translate(
-                        "converters.message.error.invalidMessageId",
-                        replacements = arrayOf(arg)
-                    )
+                    "converters.message.error.invalidMessageId".toKey().withOrdinalPlaceholders(arg)
                 )
             }
 
@@ -189,7 +187,7 @@ class PollConverter(validator: Validator<Poll> = null) : SingleConverter<Poll>(v
 
     private suspend fun errorNoMessage(arg: String, context: CommandContext): Nothing {
         throw DiscordRelayedException(
-            context.translate("converters.message.error.missing", replacements = arrayOf(arg))
+            "converters.message.error.missing".toKey().withContext(context).withOrdinalPlaceholders(arg)
         )
     }
 }

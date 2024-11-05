@@ -1,11 +1,12 @@
 package space.votebot.core
 
-import com.kotlindiscord.kord.extensions.builders.ExtensibleBotBuilder
-import com.kotlindiscord.kord.extensions.extensions.Extension
-import com.kotlindiscord.kord.extensions.extensions.event
+import dev.kordex.core.builders.ExtensibleBotBuilder
+import dev.kordex.core.extensions.Extension
+import dev.kordex.core.extensions.event
 import dev.kord.common.Locale
 import dev.kord.core.event.gateway.ReadyEvent
 import dev.kord.gateway.Intent
+import dev.kordex.core.builders.ExtensionsBuilder
 import dev.schlaubi.mikbot.plugin.api.Plugin
 import dev.schlaubi.mikbot.plugin.api.PluginContext
 import dev.schlaubi.mikbot.plugin.api.PluginMain
@@ -22,7 +23,7 @@ class VoteBotPlugin(wrapper: PluginContext) : Plugin(wrapper) {
         registerSerializer(ULong.serializer())
     }
 
-    override fun ExtensibleBotBuilder.ExtensionsBuilder.addExtensions() {
+    override fun ExtensionsBuilder.addExtensions() {
         add(::VoteBotModule)
     }
 
@@ -52,7 +53,6 @@ class VoteBotPlugin(wrapper: PluginContext) : Plugin(wrapper) {
 
 class VoteBotModule : Extension() {
     override val name: String = "votebot"
-    override val bundle: String = "votebot"
     override val allowApplicationCommandInDMs: Boolean = false
 
     override suspend fun setup() {

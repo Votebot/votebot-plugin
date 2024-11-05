@@ -1,73 +1,73 @@
 package space.votebot.commands.vote.create
 
-import com.kotlindiscord.kord.extensions.DiscordRelayedException
-import com.kotlindiscord.kord.extensions.commands.Arguments
-import com.kotlindiscord.kord.extensions.components.applyComponents
-import com.kotlindiscord.kord.extensions.components.buttons.InteractionButtonWithAction
-import com.kotlindiscord.kord.extensions.components.components
-import com.kotlindiscord.kord.extensions.components.ephemeralButton
-import com.kotlindiscord.kord.extensions.components.ephemeralStringSelectMenu
-import com.kotlindiscord.kord.extensions.components.forms.ModalForm
-import com.kotlindiscord.kord.extensions.components.types.emoji
-import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
-import com.kotlindiscord.kord.extensions.parsers.DurationParser
-import com.kotlindiscord.kord.extensions.parsers.DurationParserException
 import dev.kord.common.asJavaLocale
 import dev.kord.common.entity.ApplicationIntegrationType
 import dev.kord.common.entity.ButtonStyle
 import dev.kord.core.entity.channel.Channel
 import dev.kord.x.emoji.DiscordEmoji
 import dev.kord.x.emoji.Emojis
+import dev.kordex.core.DiscordRelayedException
+import dev.kordex.core.commands.Arguments
+import dev.kordex.core.components.applyComponents
+import dev.kordex.core.components.buttons.InteractionButtonWithAction
+import dev.kordex.core.components.components
+import dev.kordex.core.components.ephemeralButton
+import dev.kordex.core.components.ephemeralStringSelectMenu
+import dev.kordex.core.components.forms.ModalForm
+import dev.kordex.core.components.types.emoji
+import dev.kordex.core.extensions.ephemeralSlashCommand
+import dev.kordex.core.i18n.toKey
+import dev.kordex.core.i18n.types.Key
+import dev.kordex.core.i18n.withContext
+import dev.kordex.core.parsers.DurationParser
+import dev.kordex.core.parsers.DurationParserException
+import dev.kordex.core.utils.toDuration
 import dev.schlaubi.mikbot.plugin.api.util.discordError
 import dev.schlaubi.mikbot.plugin.api.util.kord
-import dev.schlaubi.mikbot.plugin.api.util.toDuration
+import dev.schlaubi.mikbot.plugin.api.util.translate
 import kotlinx.datetime.Clock
+import kotlinx.datetime.TimeZone
 import space.votebot.command.ChoiceEmojiMode
 import space.votebot.command.PollSettingsArgumentsMixin
 import space.votebot.command.toChoiceEmoji
-import space.votebot.common.models.FinalPollSettings
-import space.votebot.common.models.Poll
-import space.votebot.common.models.PollSettings
-import space.votebot.common.models.StoredPollSettings
-import space.votebot.common.models.merge
+import space.votebot.common.models.*
 import space.votebot.core.VoteBotDatabase
 import space.votebot.core.VoteBotModule
 import space.votebot.core.selectEmojis
 import space.votebot.core.toEmbed
+import space.votebot.translations.VoteBotTranslations
 import space.votebot.util.voteSafeGuild
-import java.util.Locale
+import java.util.*
 import kotlin.random.Random
 import kotlin.time.Duration.Companion.minutes
 
 class CreateArguments : Arguments(), BasicCreateOptions, PollSettingsArgumentsMixin {
     override val title: String by voteTitle()
     override val channel: Channel? by voteChannel()
-    val maxVotes by maxVotes("TBD")
-    val maxCHanges by maxChanges("TBD")
+    val maxVotes by maxVotes(VoteBotTranslations.Poll.Create.Arguments.maxVotes)
+    val maxChanges by maxChanges(VoteBotTranslations.Poll.Create.Arguments.maxChanges)
 }
 
 private class AddOptionModal : ModalForm() {
-    override var bundle: String? = "votebot"
-    override var title: String = "commands.create.interactive.modal.add_option.title"
+    override var title = VoteBotTranslations.Commands.Create.Interactive.Modal.AddOption.title
 
     val option = lineText {
-        label = "commands.create.interactive.modal.add_option.option.label"
+        label = VoteBotTranslations.Commands.Create.Interactive.Modal.AddOption.Option.label
         maxLength = 50
     }
 }
 
 private class SetDurationModal : ModalForm() {
-    override var bundle: String? = "votebot"
-    override var title: String = "commands.create.interactive.modal.set_duration.title"
+    override var title = VoteBotTranslations.Commands.Create.Interactive.Modal.SetDuration.title
 
     val duration = lineText {
-        label = "commands.create.interactive.modal.set_duration.option.label"
+        label = VoteBotTranslations.Commands.Create.Interactive.Modal.SetDuration.Option.label
     }
 }
 
 suspend fun VoteBotModule.createCommand() = ephemeralSlashCommand(::CreateArguments) {
-    name = "create-vote"
-    description = "commands.create.interactive.description"
+    name = VoteBotTranslations.Commands.Create.name
+    description = VoteBotTranslations.Commands.Create.description
     voteCommandContext()
 
     action commandAction@{
@@ -75,7 +75,7 @@ suspend fun VoteBotModule.createCommand() = ephemeralSlashCommand(::CreateArgume
             ?: StoredPollSettings()).merge(
             StoredPollSettings(
                 maxVotes = arguments.maxVotes,
-                maxChanges = arguments.maxCHanges
+                maxChanges = arguments.maxChanges
             )
         )
         val emojis = currentSettings.selectEmojis(
@@ -94,11 +94,12 @@ suspend fun VoteBotModule.createCommand() = ephemeralSlashCommand(::CreateArgume
             Clock.System.now(),
             currentSettings
         )
-         val isGuildInstall = event.interaction.authorizingIntegrationOwners.containsKey(ApplicationIntegrationType.GuildInstall)
-        val maxOptions = if(isGuildInstall) 25 else 20
+        val isGuildInstall =
+            event.interaction.authorizingIntegrationOwners.containsKey(ApplicationIntegrationType.GuildInstall)
+        val maxOptions = if (isGuildInstall) 25 else 20
 
         respond {
-            content = translate("commands.create.interactive.status", arrayOf(channel.mention))
+            content = translate(VoteBotTranslations.Commands.Create.Interactive.status, channel.mention)
             embeds = mutableListOf(poll.toEmbed(this@commandAction.kord, this@commandAction.voteSafeGuild))
 
             components(10.minutes) {
@@ -128,8 +129,7 @@ suspend fun VoteBotModule.createCommand() = ephemeralSlashCommand(::CreateArgume
                 lateinit var submitButton: InteractionButtonWithAction<*, *>
 
                 addOptionButton = ephemeralButton(::AddOptionModal, row = 1) {
-                    label = translate("commands.create.interactive.add_option.label")
-                    bundle = this@createCommand.bundle
+                    label = VoteBotTranslations.Commands.Create.Interactive.AddOption.label
                     style = ButtonStyle.Success
                     emoji(Emojis.heavyPlusSign.toString())
 
@@ -153,23 +153,21 @@ suspend fun VoteBotModule.createCommand() = ephemeralSlashCommand(::CreateArgume
                 }
 
                 removeOptionButton = ephemeralButton(row = 1) {
-                    label = translate("commands.create.interactive.remove_option.label")
+                    label = VoteBotTranslations.Commands.Create.Interactive.RemoveOption.label
                     disabled = true
                     style = ButtonStyle.Danger
                     emoji(Emojis.heavyMinusSign.toString())
-                    bundle = this@createCommand.bundle
 
                     action {
                         respond {
-                            content = translate("commands.create.interactive.remove_option.select")
+                            content = translate(VoteBotTranslations.Commands.Create.Interactive.RemoveOption.select)
 
                             components(timeout) {
                                 ephemeralStringSelectMenu {
-                                    bundle = this@createCommand.bundle
                                     maximumChoices = poll.options.size
                                     poll.options.forEachIndexed { index, option ->
                                         val (_, label) = option as Poll.Option.ActualOption
-                                        option("${index + 1} - $label", index.toString())
+                                        option("${index + 1} - $label".toKey(), index.toString())
                                     }
 
                                     action {
@@ -187,7 +185,8 @@ suspend fun VoteBotModule.createCommand() = ephemeralSlashCommand(::CreateArgume
                                         addOptionButton.enable()
                                         update()
                                         edit {
-                                            content = translate("commands.create.interactive.remove_option.done")
+                                            content =
+                                                translate(VoteBotTranslations.Commands.Create.Interactive.RemoveOption.done)
                                             components = mutableListOf()
                                         }
                                     }
@@ -200,8 +199,7 @@ suspend fun VoteBotModule.createCommand() = ephemeralSlashCommand(::CreateArgume
                 submitButton = ephemeralButton(row = 2) {
                     style = ButtonStyle.Success
                     emoji(Emojis.heavyCheckMark.toString())
-                    label = translate("commands.create.interactive.submit")
-                    bundle = this@createCommand.bundle
+                    label = VoteBotTranslations.Commands.Create.Interactive.submit
                     disabled = true
 
                     action {
@@ -217,12 +215,11 @@ suspend fun VoteBotModule.createCommand() = ephemeralSlashCommand(::CreateArgume
                             this@commandAction.createVote(interactionResponse, settings) ?: return@action
                         } catch (e: DiscordRelayedException) {
                             respond {
-                                content = e.reason
+                                content = e.reason.withContext(this@action).translate()
 
                                 components(5.minutes) {
                                     ephemeralButton {
-                                        label = translate("common.retry")
-                                        bundle = this@createCommand.bundle
+                                        label = VoteBotTranslations.Common.retry
                                         emoji(Emojis.repeat.toString())
 
                                         action {
@@ -231,7 +228,8 @@ suspend fun VoteBotModule.createCommand() = ephemeralSlashCommand(::CreateArgume
                                                 ?: return@action
 
                                             this@commandAction.edit {
-                                                content = translate("commands.create.done", arrayOf(vote.jumpUrl))
+                                                content =
+                                                    translate(VoteBotTranslations.Commands.Create.done, vote.jumpUrl)
                                                 components = mutableListOf()
                                                 embeds = mutableListOf()
                                             }
@@ -243,7 +241,7 @@ suspend fun VoteBotModule.createCommand() = ephemeralSlashCommand(::CreateArgume
                         }
 
                         this@commandAction.edit {
-                            content = translate("commands.create.done", arrayOf(vote.jumpUrl))
+                            content = translate(VoteBotTranslations.Commands.Create.done, vote.jumpUrl)
                             components = mutableListOf()
                             embeds = mutableListOf()
                         }
@@ -253,29 +251,27 @@ suspend fun VoteBotModule.createCommand() = ephemeralSlashCommand(::CreateArgume
                 ephemeralButton(row = 2) {
                     style = ButtonStyle.Secondary
                     emoji(Emojis.gear.toString())
-                    label = translate("commands.create.interactive.settings.label")
-                    bundle = this@createCommand.bundle
+                    label = VoteBotTranslations.Commands.Create.Interactive.Settings.label
 
                     action {
                         respond {
-                            content = translate("commands.create.interactive.settings.explainer")
+                            content = translate(VoteBotTranslations.Commands.Create.Interactive.Settings.explainer)
                             components(timeout) {
                                 suspend fun settingsToggle(
                                     row: Int,
-                                    translateKey: String,
+                                    translateKey: Key,
                                     emoji: DiscordEmoji,
                                     option: FinalPollSettings.() -> Boolean,
-                                    on: String = "commands.create.interactive.settings.on",
-                                    off: String = "commands.create.interactive.settings.off",
+                                    on: Key = VoteBotTranslations.Commands.Create.Interactive.Settings.on,
+                                    off: Key = VoteBotTranslations.Commands.Create.Interactive.Settings.off,
                                     update: FinalPollSettings.(Boolean) -> FinalPollSettings
                                 ) = ephemeralButton(row) {
                                     suspend fun rerender() {
                                         val state = if (currentSettings.option()) on else off
 
-                                        label = translate(translateKey, arrayOf(translate(state)))
+                                        label = translateKey.withOrdinalPlaceholders(translate(state))
                                         style = if (!poll.settings.option()) ButtonStyle.Danger else ButtonStyle.Success
                                     }
-                                    bundle = this@createCommand.bundle
                                     emoji(emoji.toString())
                                     rerender()
                                     action {
@@ -287,7 +283,7 @@ suspend fun VoteBotModule.createCommand() = ephemeralSlashCommand(::CreateArgume
 
                                 settingsToggle(
                                     1,
-                                    "commands.create.interactive.hide_results.label",
+                                    VoteBotTranslations.Commands.Create.Interactive.HideResults.label,
                                     Emojis.detective,
                                     FinalPollSettings::hideResults
                                 ) {
@@ -295,7 +291,7 @@ suspend fun VoteBotModule.createCommand() = ephemeralSlashCommand(::CreateArgume
                                 }
                                 settingsToggle(
                                     1,
-                                    "commands.create.interactive.public_results.label",
+                                    VoteBotTranslations.Commands.Create.Interactive.PublicResults.label,
                                     Emojis.chartWithUpwardsTrend,
                                     FinalPollSettings::publicResults
                                 ) {
@@ -303,20 +299,19 @@ suspend fun VoteBotModule.createCommand() = ephemeralSlashCommand(::CreateArgume
                                 }
                                 settingsToggle(
                                     1,
-                                    "commands.create.interactive.show_chart.label",
+                                    VoteBotTranslations.Commands.Create.Interactive.ShowChart.label,
                                     Emojis.barChart,
                                     FinalPollSettings::showChartAfterClose,
-                                    on = "commands.create.interactive.show_chart.on",
-                                    off = "commands.create.interactive.show_chart.off",
+                                    on = VoteBotTranslations.Commands.Create.Interactive.ShowChart.on,
+                                    off = VoteBotTranslations.Commands.Create.Interactive.ShowChart.off,
                                 ) {
                                     copy(showChartAfterClose = it)
                                 }
 
-                                if(isGuildInstall) {
+                                if (isGuildInstall) {
                                     ephemeralButton(::SetDurationModal, row = 2) {
-                                        bundle = this@createCommand.bundle
                                         emoji(Emojis.clock.toString())
-                                        label = translate("commands.create.interactive.set_duration.label")
+                                        label = VoteBotTranslations.Commands.Create.Interactive.SetDuration.label
 
                                         action { modal ->
                                             try {
@@ -324,39 +319,36 @@ suspend fun VoteBotModule.createCommand() = ephemeralSlashCommand(::CreateArgume
                                                     DurationParser.parse(
                                                         modal!!.duration.value!!,
                                                         event.interaction.locale?.asJavaLocale() ?: Locale.ENGLISH
-                                                    ).toDuration()
+                                                    ).toDuration(TimeZone.UTC)
                                                 checkDuration(duration)
 
                                                 currentSettings = currentSettings.copy(deleteAfter = duration)
                                                 update()
                                             } catch (e: DurationParserException) {
-                                                discordError(e.message!!)
+                                                discordError(e.message!!.toKey())
                                             }
                                         }
                                     }
                                 }
                                 ephemeralStringSelectMenu(row = 3) {
-                                    bundle = this@createCommand.bundle
                                     suspend fun render() {
                                         val name = translate(currentSettings.emojiMode.toChoiceEmoji().readableName)
 
-                                        placeholder = translate(
-                                            "commands.create.interactive.emoji_mode.place_holder",
-                                            arrayOf(name)
-                                        )
+                                        placeholder =
+                                            VoteBotTranslations.Commands.Create.Interactive.EmojiMode.placeHolder
+                                                .withOrdinalPlaceholders(name)
                                     }
                                     render()
 
                                     ChoiceEmojiMode.entries
                                         .filter { isGuildInstall || it != ChoiceEmojiMode.CUSTOM }
                                         .forEach {
-                                        val label = translate(
-                                            "commands.create.interactive.emoji_mode.place_holder",
-                                            arrayOf(translate(it.readableName))
-                                        )
+                                            val label =
+                                                VoteBotTranslations.Commands.Create.Interactive.EmojiMode.placeHolder
+                                                    .withOrdinalPlaceholders(translate(it.readableName))
 
-                                        option(label, it.mode.name)
-                                    }
+                                            option(label, it.mode.name)
+                                        }
 
                                     action {
                                         currentSettings = currentSettings.copy(

@@ -1,13 +1,5 @@
 package space.votebot.core
 
-import com.kotlindiscord.kord.extensions.components.components
-import com.kotlindiscord.kord.extensions.components.ephemeralButton
-import com.kotlindiscord.kord.extensions.components.types.emoji
-import com.kotlindiscord.kord.extensions.events.EventContext
-import com.kotlindiscord.kord.extensions.extensions.event
-import com.kotlindiscord.kord.extensions.utils.dm
-import dev.kord.common.annotation.KordExperimental
-import dev.kord.common.annotation.KordUnsafe
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.Kord
@@ -20,8 +12,15 @@ import dev.kord.core.entity.channel.thread.ThreadChannel
 import dev.kord.core.event.interaction.ButtonInteractionCreateEvent
 import dev.kord.core.event.interaction.GuildButtonInteractionCreateEvent
 import dev.kord.x.emoji.Emojis
+import dev.kordex.core.components.components
+import dev.kordex.core.components.ephemeralButton
+import dev.kordex.core.components.types.emoji
+import dev.kordex.core.events.EventContext
+import dev.kordex.core.extensions.event
+import dev.kordex.core.types.TranslatableContext
+import dev.kordex.core.utils.dm
 import dev.schlaubi.mikbot.plugin.api.util.MessageSender
-import dev.schlaubi.mikbot.plugin.api.util.Translator
+import dev.schlaubi.mikbot.plugin.api.util.translate
 import io.ktor.client.request.forms.*
 import io.ktor.utils.io.jvm.javaio.*
 import kotlinx.coroutines.CoroutineScope
@@ -29,6 +28,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import space.votebot.common.models.Poll
+import space.votebot.translations.VoteBotTranslations
 import space.votebot.util.reFetch
 
 private val VoteExecutor = CoroutineScope(Dispatchers.IO + SupervisorJob())
@@ -36,7 +36,7 @@ private val VoteExecutor = CoroutineScope(Dispatchers.IO + SupervisorJob())
 suspend fun Poll.close(
     kord: Kord,
     sendMessage: MessageSender,
-    translate: Translator,
+    translator: TranslatableContext,
     showChart: Boolean? = null,
     guild: GuildBehavior?,
     isRetry: Boolean = false,
@@ -57,22 +57,22 @@ suspend fun Poll.close(
             VoteBotDatabase.polls.save(copy(excludedFromScheduling = true))
             if (isRetry) {
                 sendMessage {
-                    content = translate("vote.close.error.again", "votebot")
+                    content = translator.translate(VoteBotTranslations.Vote.Close.Error.again)
                 }
             } else {
                 sendMessage {
-                    content = translate("vote.close.error.generic", "votebot")
+                    content = translator.translate(VoteBotTranslations.Vote.Close.Error.generic)
                     embeds = mutableListOf(toEmbed(kord, guild, highlightWinner = true, overwriteHideResults = true))
 
                     components {
                         ephemeralButton {
                             emoji(Emojis.repeat.toString())
-                            label = translate("common.retry", "votebot")
+                            label = VoteBotTranslations.Common.retry
 
                             action {
                                 removeAll()
                                 edit { components = mutableListOf() }
-                                close(kord, ::respond, translate, showChart, guild, isRetry = true)
+                                close(kord, ::respond, translator, showChart, guild, isRetry = true)
                             }
                         }
                     }
@@ -99,7 +99,6 @@ suspend fun Poll.close(
     }
 }
 
-@OptIn(KordUnsafe::class, KordExperimental::class)
 suspend fun VoteBotModule.voteExecutor() = event<ButtonInteractionCreateEvent> {
     action {
         VoteExecutor.launch {
@@ -133,19 +132,19 @@ private suspend fun EventContext<ButtonInteractionCreateEvent>.onClose(guild: Gu
 
             if (Permission.ManageMessages !in permissions) {
                 ack.createEphemeralFollowup {
-                    content = translate("vote.close.failed.missing_permission")
+                    content = translate(VoteBotTranslations.Vote.Close.Failed.missingPermission)
                 }
                 return
             }
         } else {
             ack.createEphemeralFollowup {
-                content = translate("vote.close.failed.missing_permission")
+                content = translate(VoteBotTranslations.Vote.Close.Failed.missingPermission)
             }
             return
         }
     }
 
-    poll.close(event.kord, { ack.createEphemeralFollowup { it() } }, ::translate, guild = guild, response = ack)
+    poll.close(event.kord, { ack.createEphemeralFollowup { it() } }, this, guild = guild, response = ack)
 }
 
 private suspend fun EventContext<ButtonInteractionCreateEvent>.onVote(guild: GuildBehavior?) {
@@ -173,7 +172,7 @@ private suspend fun EventContext<ButtonInteractionCreateEvent>.onVote(guild: Gui
         val settings = poll.settings
         if (settings.maxVotes == 1 && settings.maxChanges == 0) {
             ack.createEphemeralFollowup {
-                content = translate("vote.voted_already")
+                content = translate(VoteBotTranslations.Vote.votedAlready)
             }
             return
         } else if (settings.maxChanges == 0) { // maxVotes > 1
@@ -191,7 +190,7 @@ private suspend fun EventContext<ButtonInteractionCreateEvent>.onVote(guild: Gui
                 poll.copy(votes = poll.votes - existingVote + newVote)
             } else {
                 ack.createEphemeralFollowup {
-                    content = translate("vote.too_many_votes", arrayOf(settings.maxVotes))
+                    content = translate(VoteBotTranslations.Vote.tooManyVotes, settings.maxVotes)
                 }
                 return
             }
@@ -199,7 +198,7 @@ private suspend fun EventContext<ButtonInteractionCreateEvent>.onVote(guild: Gui
             val changes = poll.changes[userId] ?: 0
             if (changes >= settings.maxChanges) {
                 ack.createEphemeralFollowup {
-                    content = translate("vote.too_many_changes", arrayOf(settings.maxChanges))
+                    content = translate(VoteBotTranslations.Vote.tooManyChanges, settings.maxChanges)
                 }
                 return
             }
@@ -218,7 +217,7 @@ private suspend fun EventContext<ButtonInteractionCreateEvent>.onVote(guild: Gui
     VoteBotDatabase.polls.save(newPoll)
     if (poll.settings.hideResults) {
         ack.createEphemeralFollowup {
-            content = translate("vote.voted", arrayOf(newPoll.options[option]))
+            content = translate(VoteBotTranslations.Vote.voted, newPoll.options[option])
         }
     }
     // Update the message the suer clicked on using the interaction API

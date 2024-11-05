@@ -1,33 +1,35 @@
 package space.votebot.commands.vote
 
-import com.kotlindiscord.kord.extensions.commands.Arguments
-import com.kotlindiscord.kord.extensions.commands.converters.impl.defaultingBoolean
-import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
+import dev.kordex.core.commands.Arguments
+import dev.kordex.core.commands.converters.impl.defaultingBoolean
+import dev.kordex.core.extensions.ephemeralSlashCommand
 import dev.kord.common.entity.ApplicationIntegrationType
 import dev.schlaubi.mikbot.plugin.api.util.discordError
+import dev.schlaubi.mikbot.plugin.api.util.translate
 import space.votebot.command.poll
 import space.votebot.commands.vote.create.voteCommandContext
 import space.votebot.core.VoteBotModule
 import space.votebot.core.addMessage
 import space.votebot.core.toEmbed
 import space.votebot.core.voteParentChannel
+import space.votebot.translations.VoteBotTranslations
 
 class StatusArguments : Arguments() {
     val poll by poll {
-        name = "poll"
-        description = "commands.status.arguments.poll.description"
+        name = VoteBotTranslations.Commands.Status.Arguments.Poll.name
+        description = VoteBotTranslations.Commands.Status.Arguments.Poll.description
     }
 
     val liveMessage by defaultingBoolean {
-        name = "live"
-        description = "commands.status.arguments.live.description"
+        name = VoteBotTranslations.Commands.Status.Arguments.Live.name
+        description = VoteBotTranslations.Commands.Status.Arguments.Live.description
         defaultValue = false
     }
 }
 
 suspend fun VoteBotModule.statusCommand() = ephemeralSlashCommand(::StatusArguments) {
-    name = "status"
-    description = "commands.status.description"
+    name = VoteBotTranslations.Commands.Status.name
+    description = VoteBotTranslations.Commands.Status.description
     voteCommandContext()
 
     action {
@@ -40,10 +42,10 @@ suspend fun VoteBotModule.statusCommand() = ephemeralSlashCommand(::StatusArgume
             poll.addMessage(voteParentChannel, addButtons = true, addToDatabase = true, closeButton = false, guild = guild)
 
             respond {
-                content = translate("commands.status.success")
+                content = translate(VoteBotTranslations.Commands.Status.success)
             }
         } else {
-            discordError(translate("commands.status.user_install"))
+            discordError(VoteBotTranslations.Commands.Status.userInstall)
         }
     }
 }

@@ -1,6 +1,6 @@
 package space.votebot.commands.vote.create
 
-import com.kotlindiscord.kord.extensions.commands.application.ApplicationCommand
+import dev.kordex.core.commands.application.ApplicationCommand
 import dev.kord.common.entity.ApplicationIntegrationType
 import dev.kord.common.entity.InteractionContextType
 import space.votebot.core.VoteBotModule

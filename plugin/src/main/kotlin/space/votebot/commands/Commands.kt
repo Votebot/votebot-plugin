@@ -13,5 +13,5 @@ suspend fun VoteBotModule.commands() {
     addOptionCommand()
     removeOptionCommand()
 
-    infoCommand()
+//    infoCommand()
 }

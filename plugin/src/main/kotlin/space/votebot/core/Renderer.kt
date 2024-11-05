@@ -1,7 +1,5 @@
 package space.votebot.core
 
-import com.kotlindiscord.kord.extensions.time.TimestampType
-import com.kotlindiscord.kord.extensions.time.toDiscord
 import dev.kord.common.entity.ButtonStyle
 import dev.kord.common.entity.DiscordPartialEmoji
 import dev.kord.common.entity.Permission
@@ -17,6 +15,8 @@ import dev.kord.rest.builder.component.MessageComponentBuilder
 import dev.kord.rest.builder.message.EmbedBuilder
 import dev.kord.rest.builder.message.modify.MessageModifyBuilder
 import dev.kord.x.emoji.Emojis
+import dev.kordex.core.time.TimestampType
+import dev.kordex.core.time.toDiscord
 import dev.schlaubi.mikbot.plugin.api.util.effectiveAvatar
 import dev.schlaubi.mikbot.plugin.api.util.embed
 import dev.schlaubi.stdx.coroutines.forEachParallel
@@ -133,7 +133,11 @@ suspend fun Poll.updateMessages(
     return failedMessages.isEmpty()
 }
 
-private suspend fun Poll.makeButtons(kord: Kord, closeButton: Boolean, guild: GuildBehavior?): List<MessageComponentBuilder> =
+private suspend fun Poll.makeButtons(
+    kord: Kord,
+    closeButton: Boolean,
+    guild: GuildBehavior?
+): List<MessageComponentBuilder> =
     sortedOptions
         .chunked(5)
         .map { options ->
@@ -157,6 +161,7 @@ private suspend fun Poll.makeButtons(kord: Kord, closeButton: Boolean, guild: Gu
                 this
             }
         }
+
 suspend fun Poll.toEmbed(
     kord: Kord,
     guild: GuildBehavior?,

@@ -5,6 +5,7 @@ import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.GuildBehavior
 import dev.kord.x.emoji.DiscordEmoji
 import dev.kord.x.emoji.Emojis
+import dev.kordex.core.i18n.toKey
 import dev.schlaubi.mikbot.plugin.api.util.discordError
 import kotlinx.coroutines.flow.toList
 import space.votebot.common.models.FinalPollSettings
@@ -53,7 +54,7 @@ suspend fun FinalPollSettings.selectEmojis(
         poll?.options?.mapNotNull { (it as? Poll.Option.ActualOption)?.emoji }?.toSet() ?: emptySet()
     }
     if (emojiMode == PollSettings.EmojiMode.CUSTOM && guild == null) {
-        discordError("Cannot use custom emojis here")
+        discordError("Cannot use custom emojis here".toKey())
     }
     return when (emojiMode) {
         PollSettings.EmojiMode.OFF -> emptyList()

@@ -1,32 +1,33 @@
 package space.votebot.commands.settings
 
-import com.kotlindiscord.kord.extensions.commands.Arguments
-import com.kotlindiscord.kord.extensions.extensions.ephemeralSlashCommand
+import dev.kordex.core.commands.Arguments
+import dev.kordex.core.extensions.ephemeralSlashCommand
 import dev.schlaubi.mikbot.plugin.api.settings.SettingsModule
 import dev.schlaubi.mikbot.plugin.api.util.executableEverywhere
+import dev.schlaubi.mikbot.plugin.api.util.translate
 import space.votebot.command.PollSettingsArguments
 import space.votebot.command.decide
 import space.votebot.common.models.PollSettings
 import space.votebot.common.models.StoredPollSettings
 import space.votebot.core.VoteBotDatabase
 import space.votebot.models.UserSettings
+import space.votebot.translations.VoteBotTranslations
 
 class DefaultOptionsArgument : Arguments(), PollSettingsArguments {
-    override val maxVotes by maxVotes("commands.default_options.max_votes.description")
-    override val maxChanges by maxChanges("commands.default_options.max_changes.description")
-    override val deleteAfterPeriod by voteDuration("commands.default_options.delete_after_period.description")
-    override val showChartAfterClose: Boolean? by showChart("commands.default_options.show_chart_after_close.description")
-    override val hideResults: Boolean? by hideResults("commands.default_options.hide_results.description")
-    override val publicResults: Boolean? by publicResults("commands.default_options.public_results.description")
-    private val emojiModeOption by emojiMode("commands.default_options.emoji_mode.description")
+    override val maxVotes by maxVotes(VoteBotTranslations.Commands.DefaultOptions.MaxVotes.description)
+    override val maxChanges by maxChanges(VoteBotTranslations.Commands.DefaultOptions.MaxChanges.description)
+    override val deleteAfterPeriod by voteDuration(VoteBotTranslations.Commands.DefaultOptions.DeleteAfterPeriod.description)
+    override val showChartAfterClose: Boolean? by showChart(VoteBotTranslations.Commands.DefaultOptions.ShowChartAfterClose.description)
+    override val hideResults: Boolean? by hideResults(VoteBotTranslations.Commands.DefaultOptions.HideResults.description)
+    override val publicResults: Boolean? by publicResults(VoteBotTranslations.Commands.DefaultOptions.PublicResults.description)
+    private val emojiModeOption by emojiMode(VoteBotTranslations.Commands.DefaultOptions.EmojiMode.description)
     override val emojiMode: PollSettings.EmojiMode?
         get() = emojiModeOption?.mode
 }
 
 suspend fun SettingsModule.defaultOptionsCommand() = ephemeralSlashCommand(::DefaultOptionsArgument) {
-    name = "default-options"
-    description = "commands.default_options.description"
-    bundle = "votebot"
+    name = VoteBotTranslations.Commands.DefaultOptions.name
+    description = VoteBotTranslations.Commands.DefaultOptions.description
     executableEverywhere()
 
     action {
@@ -44,7 +45,7 @@ suspend fun SettingsModule.defaultOptionsCommand() = ephemeralSlashCommand(::Def
         VoteBotDatabase.userSettings.save(UserSettings(user.id, newSettings))
 
         respond {
-            content = translate("commands.default_options.saved")
+            content = translate(VoteBotTranslations.Commands.DefaultOptions.saved)
         }
     }
 }

@@ -1,9 +1,5 @@
 package space.votebot.commands.vote.create
 
-import com.kotlindiscord.kord.extensions.commands.Arguments
-import com.kotlindiscord.kord.extensions.commands.application.slash.EphemeralSlashCommandContext
-import com.kotlindiscord.kord.extensions.commands.application.slash.PublicSlashCommandContext
-import com.kotlindiscord.kord.extensions.commands.application.slash.SlashCommandContext
 import dev.kord.common.entity.ApplicationIntegrationType
 import dev.kord.common.entity.InteractionContextType
 import dev.kord.common.exception.RequestException
@@ -12,14 +8,20 @@ import dev.kord.core.behavior.channel.asChannelOf
 import dev.kord.core.behavior.interaction.response.FollowupPermittingInteractionResponseBehavior
 import dev.kord.core.entity.channel.GuildMessageChannel
 import dev.kord.rest.builder.message.MessageBuilder
+import dev.kordex.core.commands.Arguments
+import dev.kordex.core.commands.application.slash.EphemeralSlashCommandContext
+import dev.kordex.core.commands.application.slash.PublicSlashCommandContext
+import dev.kordex.core.commands.application.slash.SlashCommandContext
+import dev.kordex.core.i18n.types.Key
 import dev.schlaubi.mikbot.plugin.api.util.Confirmation
-import dev.schlaubi.mikbot.plugin.api.util.confirmation
 import dev.schlaubi.mikbot.plugin.api.util.discordError
+import dev.schlaubi.mikbot.plugin.api.util.translate
 import kotlinx.datetime.Clock
 import org.litote.kmongo.newId
 import space.votebot.common.models.Poll
 import space.votebot.common.models.merge
 import space.votebot.core.*
+import space.votebot.translations.VoteBotTranslations
 import space.votebot.util.checkPermissions
 import space.votebot.util.voteSafeGuild
 import kotlin.time.Duration
@@ -53,22 +55,22 @@ suspend fun <A : Arguments> SlashCommandContext<*, A, *>.createVote(
             guildChannel.toVoteParentChannel()
         }
 
-        settings.channel != null -> discordError(translate("vote.create.channel_context_error"))
+        settings.channel != null -> discordError(VoteBotTranslations.Vote.Create.channelContextError)
         else -> response.toVoteParentChannel(event.interaction.channelId)
     }
 
     settings.settings.deleteAfter?.let { checkDuration(it) }
 
     if (settings.answers.size < 2) {
-        discordError(translate("vote.create.not_enough_options"))
+        discordError(VoteBotTranslations.Vote.Create.notEnoughOptions)
     }
 
     if (isGuildInstall) {
         if (settings.answers.size > 25) {
-            discordError(translate("vote.create.too_many_options"))
+            discordError(VoteBotTranslations.Vote.Create.tooManyOptions)
         }
-    } else if (settings.answers.size > 25) {
-        discordError(translate("vote.create.too_many_options.user_mode"))
+    } else if (settings.answers.size > 20) {
+        discordError(VoteBotTranslations.Vote.Create.TooManyOptions.userMode)
     }
 
     val toLongOption = settings.answers.firstOrNull {
@@ -76,7 +78,7 @@ suspend fun <A : Arguments> SlashCommandContext<*, A, *>.createVote(
     }
 
     if (toLongOption != null) {
-        discordError(translate("vote.create.too_long_option", arrayOf(toLongOption)))
+        discordError(VoteBotTranslations.Vote.Create.tooLongOption.withOrdinalPlaceholders(toLongOption))
     }
 
     val finalSettings = if (settings.settings.complete) {
@@ -112,7 +114,7 @@ suspend fun <A : Arguments> SlashCommandContext<*, A, *>.createVote(
     val message = try {
         poll.addMessage(channel, addButtons = true, addToDatabase = false, closeButton = !isGuildInstall, guild = guild)
     } catch (_: RequestException) {
-        discordError(translate("vote.create.missing_permissions.bot", arrayOf(channel.mention)))
+        discordError(VoteBotTranslations.Vote.Create.MissingPermissions.bot.withOrdinalPlaceholders(channel.mention))
     }
     VoteBotDatabase.polls.save(poll.copy(messages = listOf(message.toPollMessage())))
 
@@ -126,10 +128,10 @@ suspend fun <A : Arguments> SlashCommandContext<*, A, *>.createVote(
 private suspend fun <A : Arguments> SlashCommandContext<*, A, *>.attemptSendingDMs(): Boolean {
     if (user.getDmChannelOrNull() == null) {
         val (agreed) = confirmation(
-            yesWord = translate("vote.create.retry"),
-            noWord = translate("vote.create.cancel"),
+            yesWord = VoteBotTranslations.Common.retry,
+            noWord = VoteBotTranslations.Common.cancel,
         ) {
-            content = translate("vote.create.dms_disabled")
+            content = translate(VoteBotTranslations.Vote.Create.dmsDisabled)
         }
         if (agreed) {
             return attemptSendingDMs()
@@ -140,9 +142,9 @@ private suspend fun <A : Arguments> SlashCommandContext<*, A, *>.attemptSendingD
     return true
 }
 
-private suspend fun SlashCommandContext<*, *, *>.confirmation(
-    yesWord: String,
-    noWord: String,
+private fun SlashCommandContext<*, *, *>.confirmation(
+    yesWord: Key,
+    noWord: Key,
     messageBuilder: suspend MessageBuilder.() -> Unit
 ): Confirmation {
     return when (this) {
@@ -152,14 +154,14 @@ private suspend fun SlashCommandContext<*, *, *>.confirmation(
     }
 }
 
-suspend fun SlashCommandContext<*, *, *>.checkDuration(duration: Duration) {
+fun SlashCommandContext<*, *, *>.checkDuration(duration: Duration) {
     if (!event.interaction.authorizingIntegrationOwners.containsKey(ApplicationIntegrationType.GuildInstall)
         && duration > 10.minutes
     ) {
         if (event.interaction.context == InteractionContextType.Guild) {
-            discordError(translate("vote.create.invalid_duration.guild", "votebot"))
+            discordError(VoteBotTranslations.Vote.Create.InvalidDuration.guild)
         } else {
-            discordError(translate("vote.create.invalid_duration.dm", "votebot"))
+            discordError(VoteBotTranslations.Vote.Create.InvalidDuration.dm)
         }
     }
 }

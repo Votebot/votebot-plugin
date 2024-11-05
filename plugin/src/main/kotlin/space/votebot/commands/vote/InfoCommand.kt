@@ -1,9 +1,10 @@
 package space.votebot.commands.vote
 
-import com.kotlindiscord.kord.extensions.extensions.publicSlashCommand
+import dev.kordex.core.extensions.publicSlashCommand
 import dev.kord.rest.builder.message.embed
 import dev.schlaubi.mikbot.plugin.api.MikBotInfo
 import dev.schlaubi.mikbot.plugin.api.util.executableEverywhere
+import dev.schlaubi.mikbot.plugin.api.util.translate
 import dev.schlaubi.stdx.coroutines.parallelMapNotNull
 import io.ktor.client.*
 import io.ktor.client.call.*
@@ -17,6 +18,7 @@ import mu.KotlinLogging
 import space.votebot.VoteBotInfo
 import space.votebot.core.VoteBotConfig
 import space.votebot.core.VoteBotModule
+import space.votebot.translations.VoteBotTranslations
 import kotlin.collections.set
 
 private val LOG = KotlinLogging.logger { }
@@ -66,8 +68,8 @@ private suspend fun findContributors() = repositories.parallelMapNotNull { repos
     .distinctBy(GitHubUser::id)
 
 suspend fun VoteBotModule.infoCommand() = publicSlashCommand {
-    name = "info"
-    description = "commands.info.description"
+    name = VoteBotTranslations.Commands.Info.name
+    description = VoteBotTranslations.Commands.Info.description
     executableEverywhere()
 
     action {
@@ -75,41 +77,41 @@ suspend fun VoteBotModule.infoCommand() = publicSlashCommand {
             embed {
                 title = "VoteBot"
 
-                description = translate("commands.info.mikbot")
+                description = translate(VoteBotTranslations.Commands.Info.mikbot)
 
                 field {
-                    name = translate("commands.info.contributors")
+                    name = translate(VoteBotTranslations.Commands.Info.contributors)
                     val contributors = runCatching { findContributors() }
                     contributors.exceptionOrNull()?.let {
                         LOG.warn(it) { "An error occurred while fetching Contributors" }
                     }
                     value = contributors.getOrNull()?.joinToString { (url, name, _, login) ->
                         "[${name ?: login}]($url)"
-                    } ?: translate("commands.info.contributors.failed")
+                    } ?: translate(VoteBotTranslations.Commands.Info.Contributors.failed)
                     inline = true
                 }
 
                 field {
-                    name = translate("commands.info.graphics")
+                    name = translate(VoteBotTranslations.Commands.Info.graphics)
                     value = "[Oskar Lang](https://rxs.to)"
                     inline = false
                 }
 
                 field {
-                    name = translate("commands.info.version.mikbot")
+                    name = translate(VoteBotTranslations.Commands.Info.Version.mikbot)
                     value = MikBotInfo.VERSION
                     inline = true
                 }
 
                 field {
-                    name = translate("commands.info.version.votebot")
+                    name = translate(VoteBotTranslations.Commands.Info.Version.votebot)
                     value = VoteBotInfo.VERSION
                     inline = true
                 }
 
                 field {
-                    name = translate("commands.info.source_code")
-                    value = "https://github.com/DRSchlaubi/mikbot/tree/main/votebot"
+                    name = translate(VoteBotTranslations.Commands.Info.sourceCode)
+                    value = "https://github.com/votebot/votebot-plugin/tree/main"
                     inline = false
                 }
             }

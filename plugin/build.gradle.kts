@@ -1,6 +1,5 @@
 import dev.schlaubi.mikbot.gradle.mikbot
 import java.io.ByteArrayOutputStream
-import java.util.Locale
 
 plugins {
     kotlin("jvm")
@@ -14,7 +13,6 @@ dependencies {
     api(projects.common)
     implementation(projects.chartServiceClient)
     implementation(libs.java.string.similarity)
-    ksp(libs.kordex.processor)
     optionalPlugin(mikbot(libs.mikbot.gdpr))
     optionalPlugin(mikbot(libs.mikbot.kubernetes))
     optionalPlugin(mikbot(libs.mikbot.ktor))
@@ -26,7 +24,13 @@ mikbotPlugin {
     pluginId = "votebot"
     provider = "votebot.space"
     license = "MIT"
-    enableKordexProcessor = false
+    enableKordexProcessor = true
+
+    i18n {
+        classPackage = "space.votebot.translations"
+        translationBundle = "votebot"
+        className = "VoteBotTranslations"
+    }
 }
 
 buildConfig  {
@@ -42,13 +46,6 @@ sourceSets {
         java {
             srcDir(layout.buildDirectory.dir("generated/ksp/main/kotlin/"))
         }
-    }
-}
-
-tasks {
-    generateDefaultTranslationBundle {
-        outputs.upToDateWhen { false }
-        defaultLocale = Locale.Builder().setLanguage("en").setRegion("GB").build()
     }
 }
 

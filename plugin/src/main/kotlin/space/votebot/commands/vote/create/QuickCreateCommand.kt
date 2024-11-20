@@ -27,8 +27,8 @@ class CreateOptions : AbstractPollSettingsArguments(), CreateSettings {
 }
 
 suspend fun VoteBotModule.quickCommand() = ephemeralSlashCommand(::CreateOptions) {
-    name = VoteBotTranslations.Commands.Create.name
-    description = VoteBotTranslations.Commands.Create.description
+    name = VoteBotTranslations.Commands.QuickCreate.name
+    description = VoteBotTranslations.Commands.QuickCreate.description
     voteCommandContext()
 
     action {

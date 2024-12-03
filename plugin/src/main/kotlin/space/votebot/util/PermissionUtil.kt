@@ -27,13 +27,23 @@ private val requiredPermissions =
 suspend fun <A : Arguments> SlashCommandContext<*, A, *>.checkPermissions(channel: GuildMessageChannel): Boolean {
     val selfPermissions = channel.getEffectivePermissions(channel.kord.selfId)
     if (requiredPermissions !in selfPermissions) {
-        sendMissingPermissions(VoteBotTranslations.Vote.Create.MissingPermissions.bot, channel, channel.kord.selfId, selfPermissions)
+        sendMissingPermissions(
+            VoteBotTranslations.Vote.Create.MissingPermissions.bot,
+            channel,
+            channel.kord.selfId,
+            selfPermissions
+        )
         return false
     }
 
     val userPermissions = channel.getEffectivePermissions(user.id)
     if ((requiredPermissions - Permission.ViewChannel) !in userPermissions) {
-        sendMissingPermissions(VoteBotTranslations.Vote.Create.MissingPermissions.user, channel, user.id, userPermissions)
+        sendMissingPermissions(
+            VoteBotTranslations.Vote.Create.MissingPermissions.user,
+            channel,
+            user.id,
+            userPermissions
+        )
         return false
     }
 
@@ -64,11 +74,9 @@ private suspend fun SlashCommandContext<*, *, *>.sendMissingPermissions(
                     val missingPermissions = (requiredPermissions - permissions).values.map {
                         translate(
                             VoteBotTranslations.Vote.Create.MissingPermissions.Explainer.permission,
-                            arrayOf(
-                                it.translate(this@sendMissingPermissions),
-                                (it in serverPermissions).translate(),
-                                (it in permissions).translate(),
-                            )
+                            it.translate(this@sendMissingPermissions),
+                            (it in serverPermissions).translate(),
+                            (it in permissions).translate(),
                         )
                     }.joinToString("\n")
 

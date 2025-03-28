@@ -71,6 +71,9 @@ suspend fun VoteBotModule.createCommand() = ephemeralSlashCommand(::CreateArgume
     voteCommandContext()
 
     action commandAction@{
+        if (arguments.maxVotes != 1 && arguments.maxChanges != 0) {
+            throw DiscordRelayedException(VoteBotTranslations.Vote.Create.invalidChangeConfiguration)
+        }
         var currentSettings = (VoteBotDatabase.userSettings.findOneById(user.id)?.settings
             ?: StoredPollSettings()).merge(
             StoredPollSettings(

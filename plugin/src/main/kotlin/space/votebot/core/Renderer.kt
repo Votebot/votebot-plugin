@@ -22,7 +22,7 @@ import dev.schlaubi.mikbot.plugin.api.util.embed
 import dev.schlaubi.stdx.coroutines.forEachParallel
 import dev.schlaubi.stdx.coroutines.localSuspendLazy
 import io.ktor.client.request.forms.*
-import kotlinx.datetime.Clock
+import kotlin.time.Clock
 import mu.KotlinLogging
 import space.votebot.common.models.Poll
 import space.votebot.common.models.VoteOption

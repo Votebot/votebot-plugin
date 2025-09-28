@@ -16,7 +16,7 @@ import dev.kordex.core.i18n.types.Key
 import dev.schlaubi.mikbot.plugin.api.util.Confirmation
 import dev.schlaubi.mikbot.plugin.api.util.discordError
 import dev.schlaubi.mikbot.plugin.api.util.translate
-import kotlinx.datetime.Clock
+import kotlin.time.Clock
 import org.litote.kmongo.newId
 import space.votebot.common.models.Poll
 import space.votebot.common.models.merge

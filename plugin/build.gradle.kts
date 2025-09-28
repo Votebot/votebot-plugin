@@ -1,5 +1,4 @@
 import dev.schlaubi.mikbot.gradle.mikbot
-import java.io.ByteArrayOutputStream
 
 plugins {
     kotlin("jvm")
@@ -49,6 +48,20 @@ sourceSets {
     }
 }
 
+tasks {
+    afterEvaluate {
+        named("kspKotlin") {
+            dependsOn(generateBuildConfig)
+        }
+    }
+}
+
+kotlin {
+    compilerOptions {
+        optIn.add("kotlin.time.ExperimentalTime")
+    }
+}
+
 fun Project.getGitCommit(): String {
     return execCommand(arrayOf("git", "rev-parse", "--short", "HEAD"))
         ?: System.getenv("GITHUB_SHA") ?: "<unknown>"
@@ -60,13 +73,9 @@ fun Project.getGitBranch(): String {
 
 fun Project.execCommand(command: Array<String>): String? {
     return try {
-        ByteArrayOutputStream().use { out ->
-            exec {
-                commandLine(command.asIterable())
-                standardOutput = out
-            }
-            out.toString().trim()
-        }
+        providers.exec {
+            commandLine(command.asIterable())
+        }.standardOutput.asText.get().trim()
     } catch (e: Throwable) {
         logger.warn("An error occurred whilst executing a command", e)
         null

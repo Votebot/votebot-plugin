@@ -1,11 +1,11 @@
-import org.jetbrains.kotlin.gradle.dsl.KotlinTopLevelExtension
+import org.jetbrains.kotlin.gradle.dsl.KotlinBaseExtension
 
 plugins {
     alias(libs.plugins.kotlin) apply false
     alias(libs.plugins.kotlin.serialization) apply false
 }
 allprojects {
-    version = "5.8.2"
+    version = "5.8.2v"
     group = "space.votebot"
 
     repositories {
@@ -15,8 +15,8 @@ allprojects {
 
 subprojects {
     afterEvaluate {
-        configure<KotlinTopLevelExtension> {
-            jvmToolchain(22)
+        configure<KotlinBaseExtension> {
+            jvmToolchain(24)
         }
     }
 }

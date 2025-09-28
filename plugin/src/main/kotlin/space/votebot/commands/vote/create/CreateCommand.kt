@@ -25,7 +25,7 @@ import dev.kordex.core.utils.toDuration
 import dev.schlaubi.mikbot.plugin.api.util.discordError
 import dev.schlaubi.mikbot.plugin.api.util.kord
 import dev.schlaubi.mikbot.plugin.api.util.translate
-import kotlinx.datetime.Clock
+import kotlin.time.Clock
 import kotlinx.datetime.TimeZone
 import space.votebot.command.ChoiceEmojiMode
 import space.votebot.command.PollSettingsArgumentsMixin

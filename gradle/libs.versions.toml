@@ -1,6 +1,6 @@
 [versions]
-kotlin = "2.2.20"
-mikbot = "5.0.1"
+kotlin = "2.2.21"
+mikbot = "5.031"
 ktor = "3.3.0"
 
 [libraries]
@@ -20,5 +20,5 @@ java-string-similarity = { group = "info.debatty", name = "java-string-similarit
 kotlin = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 mikbot = { id = "dev.schlaubi.mikbot.gradle-plugin", version.ref = "mikbot" }
-ksp = { id = "com.google.devtools.ksp", version = "2.2.20-2.0.3" }
+ksp = { id = "com.google.devtools.ksp", version = "2.3.2" }
 buildconfig = { id = "com.github.gmazzo.buildconfig", version = "5.6.8"}

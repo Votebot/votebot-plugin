@@ -51,7 +51,7 @@ sourceSets {
 tasks {
     afterEvaluate {
         named("kspKotlin") {
-            dependsOn(generateBuildConfig)
+            dependsOn(generateBuildConfigClasses)
         }
     }
 }

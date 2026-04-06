@@ -1,10 +1,10 @@
 [versions]
-kotlin = "2.2.21"
-mikbot = "5.0.3"
-ktor = "3.3.0"
+kotlin = "2.3.20"
+mikbot = "5.1.2"
+ktor = "3.4.2"
 
 [libraries]
-kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version = "1.9.0" }
+kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version = "1.10.0" }
 ktor-client-okhttp = { group = "io.ktor", name = "ktor-client-okhttp", version.ref = "ktor" }
 ktor-client-content-negotiation = { group = "io.ktor", name = "ktor-client-content-negotiation", version.ref = "ktor" }
 ktor-serialization-kotlinx-json = { group = "io.ktor", name = "ktor-serialization-kotlinx-json", version.ref = "ktor" }
@@ -20,5 +20,5 @@ java-string-similarity = { group = "info.debatty", name = "java-string-similarit
 kotlin = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 mikbot = { id = "dev.schlaubi.mikbot.gradle-plugin", version.ref = "mikbot" }
-ksp = { id = "com.google.devtools.ksp", version = "2.3.2" }
-buildconfig = { id = "com.github.gmazzo.buildconfig", version = "5.6.8"}
+ksp = { id = "com.google.devtools.ksp", version = "2.3.6" }
+buildconfig = { id = "com.github.gmazzo.buildconfig", version = "6.0.9"}

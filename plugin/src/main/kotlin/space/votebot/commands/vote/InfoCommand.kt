@@ -20,6 +20,7 @@ import space.votebot.core.VoteBotConfig
 import space.votebot.core.VoteBotModule
 import space.votebot.translations.VoteBotTranslations
 import kotlin.collections.set
+import kotlin.io.encoding.Base64
 
 private val LOG = KotlinLogging.logger { }
 private val repositories = listOf("DRSchlaubi/mikbot", "Votebot/piechart-service")
@@ -53,8 +54,7 @@ private suspend fun findContributors() = repositories.parallelMapNotNull { repos
         }
 
         if (VoteBotConfig.GITHUB_TOKEN != null) {
-            val token = "${VoteBotConfig.GITHUB_USERNAME}:${VoteBotConfig.GITHUB_TOKEN}"
-                .encodeBase64()
+            val token = Base64.encode("${VoteBotConfig.GITHUB_USERNAME}:${VoteBotConfig.GITHUB_TOKEN}".encodeToByteArray())
             header(HttpHeaders.Authorization, "Basic $token")
         }
     }.body<List<GitHubContributor>>()

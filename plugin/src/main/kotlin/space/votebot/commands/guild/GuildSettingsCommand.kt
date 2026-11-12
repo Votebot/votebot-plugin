@@ -29,7 +29,9 @@ suspend fun SettingsModule.addGuildSettingsCommand() = ephemeralSlashCommand {
     name = VoteBotTranslations.Commands.Settings.SetVoteChannel.name
     description = VoteBotTranslations.Commands.Settings.SetVoteChannel.description
     guildAdminOnly()
-    allowedInstallTypes.add(ApplicationIntegrationType.GuildInstall)
+    scope {
+        guildInstallable()
+    }
 
     ephemeralSubCommand(::SetVoteChannelArguments) {
         name = VoteBotTranslations.Commands.Settings.SetVoteChannel.Arguments.Channel.name

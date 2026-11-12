@@ -17,7 +17,7 @@ import dev.kordex.core.components.forms.ModalForm
 import dev.kordex.core.components.types.emoji
 import dev.kordex.core.extensions.ephemeralSlashCommand
 import dev.kordex.core.i18n.toKey
-import dev.kordex.core.i18n.types.Key
+import dev.kordex.i18n.Key
 import dev.kordex.core.i18n.withContext
 import dev.kordex.core.parsers.DurationParser
 import dev.kordex.core.parsers.DurationParserException

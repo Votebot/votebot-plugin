@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
     kotlin("jvm")
     kotlin("plugin.serialization")
@@ -12,4 +14,12 @@ dependencies {
 
 kotlin {
     explicitApi()
+
+    compilerOptions {
+        jvmTarget = JvmTarget.JVM_26
+    }
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_26
 }

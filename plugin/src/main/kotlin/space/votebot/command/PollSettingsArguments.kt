@@ -6,8 +6,8 @@ import dev.kordex.core.commands.application.slash.converters.impl.optionalEnumCh
 import dev.kordex.core.commands.converters.impl.optionalBoolean
 import dev.kordex.core.commands.converters.impl.optionalDuration
 import dev.kordex.core.commands.converters.impl.optionalInt
-import dev.kordex.core.i18n.EMPTY_KEY
-import dev.kordex.core.i18n.types.Key
+import dev.kordex.i18n.EMPTY_KEY
+import dev.kordex.i18n.Key
 import dev.kordex.core.utils.toDuration
 import dev.schlaubi.mikbot.plugin.api.util.IKnowWhatIAmDoing
 import dev.schlaubi.mikbot.plugin.api.util.SortedArguments

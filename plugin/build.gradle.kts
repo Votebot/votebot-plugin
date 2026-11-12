@@ -1,4 +1,5 @@
 import dev.schlaubi.mikbot.gradle.mikbot
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     kotlin("jvm")
@@ -32,7 +33,7 @@ mikbotPlugin {
     }
 }
 
-buildConfig  {
+buildConfig {
     packageName = "space.votebot"
     className = "VoteBotInfo"
     buildConfigField("String", "VERSION", "\"${project.version}\"")
@@ -59,8 +60,14 @@ tasks {
 kotlin {
     compilerOptions {
         optIn.add("kotlin.time.ExperimentalTime")
+        jvmTarget = JvmTarget.JVM_26
     }
 }
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_26
+}
+
 
 fun Project.getGitCommit(): String {
     return execCommand(arrayOf("git", "rev-parse", "--short", "HEAD"))

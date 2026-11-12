@@ -16,7 +16,7 @@ import dev.kord.core.entity.channel.TopGuildMessageChannel
 import dev.kord.core.entity.channel.thread.ThreadChannel
 import dev.kord.core.entity.interaction.followup.FollowupMessage
 import dev.kord.rest.builder.message.create.MessageCreateBuilder
-import dev.kordex.core.i18n.types.Key
+import dev.kordex.i18n.Key
 import dev.schlaubi.mikbot.plugin.api.util.translate
 import space.votebot.translations.VoteBotTranslations
 import kotlin.time.Duration.Companion.minutes

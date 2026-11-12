@@ -3,16 +3,25 @@ package space.votebot.commands.vote.create
 import dev.kordex.core.commands.application.ApplicationCommand
 import dev.kord.common.entity.ApplicationIntegrationType
 import dev.kord.common.entity.InteractionContextType
+import io.ktor.server.config.configLoaders
 import space.votebot.core.VoteBotModule
 
 fun ApplicationCommand<*>.voteCommandContext() {
-    allowedContexts.addAll(listOf(InteractionContextType.Guild, InteractionContextType.PrivateChannel))
-    allowedInstallTypes.addAll(ApplicationIntegrationType.entries)
+    scope {
+        guildInstallable()
+        userInstallable {
+            allowInDirectDMs()
+            allowInGroupDMs()
+            allowInGuilds()
+        }
+    }
 }
 
 fun ApplicationCommand<*>.guildOnlyCommand() {
-    allowedContexts.add(InteractionContextType.Guild)
-    allowedInstallTypes.add(ApplicationIntegrationType.GuildInstall)
+    scope {
+        guildInstallable()
+        contexts.allowInGuilds()
+    }
 }
 
 suspend fun VoteBotModule.createCommands() {
